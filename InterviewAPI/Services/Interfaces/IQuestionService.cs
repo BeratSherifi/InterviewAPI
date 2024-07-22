@@ -6,7 +6,8 @@ public interface IQuestionService
 {
     Task<IEnumerable<QuestionDto>> GetAllQuestionsAsync();
     Task<QuestionDto> GetQuestionByIdAsync(int id);
-    Task<IEnumerable<QuestionDto>> GetQuestionsByPositionAsync(int positionId);
+    Task<IEnumerable<QuestionDto>> GetQuestionsByPositionIdAsync(int positionId);
+    Task<ChoiceDto> GetChoiceByIdAsync(int choiceId);
     Task<QuestionDto> AddQuestionAsync(CreateQuestionDto createQuestionDto);
     Task<QuestionDto> UpdateQuestionAsync(int id, CreateQuestionDto updateQuestionDto);
     Task<bool> DeleteQuestionAsync(int id);

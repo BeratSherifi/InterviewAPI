@@ -81,6 +81,9 @@ namespace InterviewAPI.Migrations
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("Points")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PositionId")
                         .HasColumnType("integer");
 
@@ -97,6 +100,44 @@ namespace InterviewAPI.Migrations
                     b.HasIndex("PositionId");
 
                     b.ToTable("Questions");
+                });
+
+            modelBuilder.Entity("InterviewAPI.Models.Quiz", b =>
+                {
+                    b.Property<int>("QuizId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("QuizId"));
+
+                    b.Property<bool>("Controlled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PositionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TotalScore")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("QuizId");
+
+                    b.HasIndex("PositionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Quizzes");
                 });
 
             modelBuilder.Entity("InterviewAPI.Models.User", b =>
@@ -164,6 +205,43 @@ namespace InterviewAPI.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("InterviewAPI.Models.UserAnswer", b =>
+                {
+                    b.Property<int>("UserAnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserAnswerId"));
+
+                    b.Property<string>("AnswerText")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ChoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PracticalScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuizId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserAnswerId");
+
+                    b.HasIndex("ChoiceId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("UserAnswers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -320,6 +398,51 @@ namespace InterviewAPI.Migrations
                     b.Navigation("Position");
                 });
 
+            modelBuilder.Entity("InterviewAPI.Models.Quiz", b =>
+                {
+                    b.HasOne("InterviewAPI.Models.Position", "Position")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InterviewAPI.Models.User", "User")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Position");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InterviewAPI.Models.UserAnswer", b =>
+                {
+                    b.HasOne("InterviewAPI.Models.Choice", "Choice")
+                        .WithMany()
+                        .HasForeignKey("ChoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("InterviewAPI.Models.Question", "Question")
+                        .WithMany("UserAnswers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InterviewAPI.Models.Quiz", "Quiz")
+                        .WithMany("UserAnswers")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Choice");
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Quiz");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -374,11 +497,25 @@ namespace InterviewAPI.Migrations
             modelBuilder.Entity("InterviewAPI.Models.Position", b =>
                 {
                     b.Navigation("Questions");
+
+                    b.Navigation("Quizzes");
                 });
 
             modelBuilder.Entity("InterviewAPI.Models.Question", b =>
                 {
                     b.Navigation("Choices");
+
+                    b.Navigation("UserAnswers");
+                });
+
+            modelBuilder.Entity("InterviewAPI.Models.Quiz", b =>
+                {
+                    b.Navigation("UserAnswers");
+                });
+
+            modelBuilder.Entity("InterviewAPI.Models.User", b =>
+                {
+                    b.Navigation("Quizzes");
                 });
 #pragma warning restore 612, 618
         }

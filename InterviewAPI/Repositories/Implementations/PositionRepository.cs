@@ -16,8 +16,12 @@ public class PositionRepository : IPositionRepository
 
     public async Task<IEnumerable<Position>> GetAllPositionsAsync()
     {
-        return await _context.Positions.ToListAsync();
+        return await _context.Positions
+            .Include(p => p.Questions)
+            .Include(p => p.Quizzes)
+            .ToListAsync();
     }
+
 
     public async Task<Position> GetPositionByIdAsync(int id)
     {

@@ -41,7 +41,7 @@ namespace InterviewAPI.Controllers
         [HttpGet("position/{positionId}")]
         public async Task<ActionResult<IEnumerable<QuestionDto>>> GetQuestionsByPosition(int positionId)
         {
-            var questions = await _questionService.GetQuestionsByPositionAsync(positionId);
+            var questions = await _questionService.GetQuestionsByPositionIdAsync(positionId);
             return Ok(questions);
         }
 

@@ -27,12 +27,17 @@ namespace InterviewAPI.Repositories.Implementations
             return await _context.Questions.Include(q => q.Choices).FirstOrDefaultAsync(q => q.QuestionId == id);
         }
 
-        public async Task<IEnumerable<Question>> GetQuestionsByPositionAsync(int positionId)
+        public async Task<IEnumerable<Question>> GetQuestionsByPositionIdAsync(int positionId)
         {
             return await _context.Questions
                 .Include(q => q.Choices)
                 .Where(q => q.PositionId == positionId)
                 .ToListAsync();
+        }
+        public async Task<Choice> GetChoiceByIdAsync(int choiceId)
+        {
+            return await _context.Choices
+                .FirstOrDefaultAsync(c => c.ChoiceId == choiceId);
         }
 
         public async Task<Question> AddQuestionAsync(Question question)

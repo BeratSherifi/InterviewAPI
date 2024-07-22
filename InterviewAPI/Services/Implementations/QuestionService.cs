@@ -32,10 +32,16 @@ namespace InterviewAPI.Services.Implementations
             return _mapper.Map<QuestionDto>(question);
         }
 
-        public async Task<IEnumerable<QuestionDto>> GetQuestionsByPositionAsync(int positionId)
+        public async Task<IEnumerable<QuestionDto>> GetQuestionsByPositionIdAsync(int positionId)
         {
-            var questions = await _questionRepository.GetQuestionsByPositionAsync(positionId);
+            var questions = await _questionRepository.GetQuestionsByPositionIdAsync(positionId);
             return _mapper.Map<IEnumerable<QuestionDto>>(questions);
+        }
+        
+        public async Task<ChoiceDto> GetChoiceByIdAsync(int choiceId)
+        {
+            var choice = await _questionRepository.GetChoiceByIdAsync(choiceId);
+            return _mapper.Map<ChoiceDto>(choice);
         }
 
         public async Task<QuestionDto> AddQuestionAsync(CreateQuestionDto createQuestionDto)

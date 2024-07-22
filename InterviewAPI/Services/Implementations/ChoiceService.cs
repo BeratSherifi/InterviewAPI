@@ -30,19 +30,7 @@ public class ChoiceService : IChoiceService
         var addedChoice = await _choiceRepository.AddChoiceAsync(choice);
         return _mapper.Map<ChoiceDto>(addedChoice);
     }
-
-   /* public async Task<ChoiceDto> UpdateChoiceAsync(int id, CreateChoiceDto updateChoiceDto)
-    {
-        var choice = await _choiceRepository.GetChoicesByQuestionIdAsync(id);
-        if (choice == null)
-        {
-            return null;
-        }
-
-        _mapper.Map(updateChoiceDto, choice);
-        var updatedChoice = await _choiceRepository.UpdateChoiceAsync(choice);
-        return _mapper.Map<ChoiceDto>(updatedChoice);
-    }*/
+    
 
     public async Task<bool> DeleteChoiceAsync(int id)
     {

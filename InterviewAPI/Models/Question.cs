@@ -10,4 +10,6 @@ public class Question
     public Position Position { get; set; }
     public DateTime CreatedAt { get; set; }
     public ICollection<Choice> Choices { get; set; }
+    public int? Points { get; set; } // Points for practical questions, if null, theoretical questions
+    public ICollection<UserAnswer> UserAnswers { get; set; }
 }

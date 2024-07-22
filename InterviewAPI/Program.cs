@@ -85,6 +85,9 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IChoiceRepository, ChoiceRepository>();
 builder.Services.AddScoped<IChoiceService, ChoiceService>();
 
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+
 builder.Services.AddScoped<TokenService, TokenService>();
 
 builder.Services.AddAutoMapper(typeof(Program));

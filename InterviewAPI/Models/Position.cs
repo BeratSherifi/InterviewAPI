@@ -6,4 +6,5 @@ public class Position
     public string PositionName { get; set; }
     public DateTime CreatedAt { get; set; }
     public ICollection<Question> Questions { get; set; }
+    public ICollection<Quiz> Quizzes { get; set; }
 }
