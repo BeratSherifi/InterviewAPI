@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/QuizAPI.DAL.csproj": {}
+    "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/QuizAPI.DAL.csproj": {}
   },
   "projects": {
-    "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/QuizAPI.DAL.csproj": {
+    "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/QuizAPI.DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
+        "projectUniqueName": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
         "projectName": "QuizAPI.DAL",
-        "projectPath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
+        "projectPath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
         "packagesPath": "/home/linux/.nuget/packages/",
-        "outputPath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/obj/",
+        "outputPath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/linux/.nuget/NuGet/NuGet.Config"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/QuizAPI.Domain.csproj": {
-                "projectPath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/QuizAPI.Domain.csproj"
+              "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/QuizAPI.Domain.csproj": {
+                "projectPath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/QuizAPI.Domain.csproj"
               }
             }
           }
@@ -81,14 +81,14 @@
         }
       }
     },
-    "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/QuizAPI.Domain.csproj": {
+    "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/QuizAPI.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/QuizAPI.Domain.csproj",
+        "projectUniqueName": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/QuizAPI.Domain.csproj",
         "projectName": "QuizAPI.Domain",
-        "projectPath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/QuizAPI.Domain.csproj",
+        "projectPath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/QuizAPI.Domain.csproj",
         "packagesPath": "/home/linux/.nuget/packages/",
-        "outputPath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/obj/",
+        "outputPath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/linux/.nuget/NuGet/NuGet.Config"
@@ -114,6 +114,16 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[13.0.1, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

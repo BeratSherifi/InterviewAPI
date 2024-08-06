@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "EbtFGgwA9wedNAaj8eBpPBK9mix2lG1zlloTuoTQFJMabvPkBd5omVboOrUByggTFgd9UZtFjIkgNgobYetNtw==",
+  "dgSpecHash": "k8SNHzRunaNdllNyMjW3Djx4OJ8vtIj/2K92otDv5snvrL92dkIJ9yt8pdxDJa7E92ADeG9QwW40oLUO20N3gA==",
   "success": true,
-  "projectFilePath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.BLL/QuizAPI.BLL.csproj",
+  "projectFilePath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.BLL/QuizAPI.BLL.csproj",
   "expectedPackageFiles": [
+    "/home/linux/.nuget/packages/automapper/13.0.1/automapper.13.0.1.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.aspnetcore.cryptography.internal/7.0.0/microsoft.aspnetcore.cryptography.internal.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.aspnetcore.cryptography.keyderivation/7.0.0/microsoft.aspnetcore.cryptography.keyderivation.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/7.0.0/microsoft.aspnetcore.identity.entityframeworkcore.7.0.0.nupkg.sha512",
@@ -22,9 +23,25 @@
     "/home/linux/.nuget/packages/microsoft.extensions.logging.abstractions/7.0.0/microsoft.extensions.logging.abstractions.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.extensions.options/7.0.0/microsoft.extensions.options.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.extensions.primitives/7.0.0/microsoft.extensions.primitives.7.0.0.nupkg.sha512",
+    "/home/linux/.nuget/packages/microsoft.identitymodel.abstractions/7.0.0/microsoft.identitymodel.abstractions.7.0.0.nupkg.sha512",
+    "/home/linux/.nuget/packages/microsoft.identitymodel.jsonwebtokens/7.0.0/microsoft.identitymodel.jsonwebtokens.7.0.0.nupkg.sha512",
+    "/home/linux/.nuget/packages/microsoft.identitymodel.logging/7.0.0/microsoft.identitymodel.logging.7.0.0.nupkg.sha512",
+    "/home/linux/.nuget/packages/microsoft.identitymodel.tokens/7.0.0/microsoft.identitymodel.tokens.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/npgsql/7.0.0/npgsql.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/npgsql.entityframeworkcore.postgresql/7.0.0/npgsql.entityframeworkcore.postgresql.7.0.0.nupkg.sha512",
+    "/home/linux/.nuget/packages/system.identitymodel.tokens.jwt/7.0.0/system.identitymodel.tokens.jwt.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
+      "libraryId": "System.IdentityModel.Tokens.Jwt",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

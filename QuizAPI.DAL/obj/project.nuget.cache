@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "95iksxR6KwflgJq4j4v68SWecZFO8A0VEook2YALccA/hbWFveuXfWVNm59FhaiH8hVGrwZzPJQO/KqzwYwezw==",
+  "dgSpecHash": "nbauXWo5L6GObSjs5u4yvJm7Rh38zEYBS9T+Y/EmaL81OUS/NzJwY/fAfLgc4O5gS63QyqTPdCuohc2yvOVWxQ==",
   "success": true,
-  "projectFilePath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
+  "projectFilePath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.DAL/QuizAPI.DAL.csproj",
   "expectedPackageFiles": [
+    "/home/linux/.nuget/packages/automapper/13.0.1/automapper.13.0.1.nupkg.sha512",
     "/home/linux/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.aspnetcore.cryptography.internal/7.0.0/microsoft.aspnetcore.cryptography.internal.7.0.0.nupkg.sha512",
     "/home/linux/.nuget/packages/microsoft.aspnetcore.cryptography.keyderivation/7.0.0/microsoft.aspnetcore.cryptography.keyderivation.7.0.0.nupkg.sha512",

@@ -378,8 +378,10 @@
       },
       "QuizAPI.BLL/1.0.0": {
         "dependencies": {
+          "AutoMapper": "13.0.1",
           "QuizAPI.DAL": "1.0.0",
-          "QuizAPI.Domain": "1.0.0"
+          "QuizAPI.Domain": "1.0.0",
+          "System.IdentityModel.Tokens.Jwt": "7.5.1"
         },
         "runtime": {
           "QuizAPI.BLL.dll": {}
@@ -397,6 +399,10 @@
         }
       },
       "QuizAPI.Domain/1.0.0": {
+        "dependencies": {
+          "AutoMapper": "13.0.1",
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "7.0.0"
+        },
         "runtime": {
           "QuizAPI.Domain.dll": {}
         }

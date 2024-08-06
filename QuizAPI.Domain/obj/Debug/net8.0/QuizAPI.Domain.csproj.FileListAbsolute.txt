@@ -15,3 +15,16 @@
 /home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/obj/Debug/net8.0/refint/QuizAPI.Domain.dll
 /home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.pdb
 /home/linux/RiderProjects/QuizAPI/QuizAPI.Domain/obj/Debug/net8.0/ref/QuizAPI.Domain.dll
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/bin/Debug/net8.0/QuizAPI.Domain.deps.json
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/bin/Debug/net8.0/QuizAPI.Domain.dll
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/bin/Debug/net8.0/QuizAPI.Domain.pdb
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.csproj.AssemblyReference.cache
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.AssemblyInfoInputs.cache
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.AssemblyInfo.cs
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.csproj.CoreCompileInputs.cache
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.sourcelink.json
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.dll
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/refint/QuizAPI.Domain.dll
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/QuizAPI.Domain.pdb
+/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.Domain/obj/Debug/net8.0/ref/QuizAPI.Domain.dll

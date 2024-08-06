@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gbEgeLzfZupjlon/wQ6s+uwHm6GJpsEtXjHlm+GWbKyqBd0WdOynkXZm4AX0vE/L3XmJktN0T/wvToJZT2ufUg==",
+  "dgSpecHash": "3kutIuScNTBrBs3YichkkWcfhcyM6+DVEW8jV09I4hcSSO7OG8g9KRH/C/z6HmY2zee0FE1p1Od5AEitzkh1fw==",
   "success": true,
-  "projectFilePath": "/home/linux/RiderProjects/QuizAPI/QuizAPI.API/QuizAPI.API.csproj",
+  "projectFilePath": "/home/linux/RiderProjects/QuizAPI_NEW/InterviewAPI/QuizAPI.API/QuizAPI.API.csproj",
   "expectedPackageFiles": [
     "/home/linux/.nuget/packages/automapper/13.0.1/automapper.13.0.1.nupkg.sha512",
     "/home/linux/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
