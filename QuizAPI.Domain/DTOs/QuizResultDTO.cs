@@ -12,4 +12,6 @@ public class QuizResultDTO
     public bool Controlled { get; set; }
     public ICollection<UserAnswerDTO> UserAnswers { get; set; }
     public string Message { get; set; }
+    
+    public string Comment { get; set; }
 }

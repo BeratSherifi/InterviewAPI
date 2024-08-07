@@ -242,6 +242,10 @@ namespace QuizAPI.DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("QuizId"));
 
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("Controlled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

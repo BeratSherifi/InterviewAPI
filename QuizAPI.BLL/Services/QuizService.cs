@@ -148,6 +148,7 @@ namespace QuizAPI.BLL.Services;
             }
 
             quiz.Controlled = true;
+            quiz.Comment = reviewDto.Comment;
 
             var theoreticalScore = quiz.UserAnswers
                 .Where(ua => ua.Question.QuestionType == "Theoretical" && ua.IsCorrect == true)

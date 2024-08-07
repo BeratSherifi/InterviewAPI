@@ -11,5 +11,7 @@ public class Quiz
     public DateTime? FinishedAt { get; set; }
     public int TotalScore { get; set; }
     public bool Controlled { get; set; } = false;
+    
+    public string Comment { get; set; }
     public ICollection<UserAnswer> UserAnswers { get; set; } 
 }

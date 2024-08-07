@@ -4,4 +4,5 @@ public class ReviewPracticalAnswersDTO
 {
     public int QuizId { get; set; }
     public List<ReviewPracticalAnswerDTO> Answers { get; set; }
+    public string Comment { get; set; }
 }
