@@ -54,6 +54,8 @@ public class AnalyticsController : ControllerBase
         return Ok(quiz);
     }
 
+
+
     [HttpGet("quizzes/lowest-score")]
     public async Task<ActionResult<QuizDTO>> GetLowestScore()
     {
@@ -63,4 +65,32 @@ public class AnalyticsController : ControllerBase
 
         return Ok(quiz);
     }
+
+    [HttpGet("positions/{positionId}/average-score")]
+    public async Task<ActionResult<double>> GetAverageScoreByPosition(int positionId)
+    {
+        var averageScore = await _analyticsService.GetAverageScoreByPositionAsync(positionId);
+        return averageScore;
+    }
+    
+    [HttpGet("users/passed-quizzes")]
+    public async Task<ActionResult<QuizGetAllDTO>> GetUsersThatPassedQuizzes()
+    {
+        var quizzes = await _analyticsService.GetUsersPasseddQuizzesAsync();
+        if (quizzes == null)
+            return NotFound("There is no passed quizzes");
+
+        return Ok(quizzes);
+    }
+    
+    [HttpGet("users/failed-quizzes")]
+    public async Task<ActionResult<QuizGetAllDTO>> GetUsersThatFailedQuizzes()
+    {
+        var quizzes = await _analyticsService.GetUsersFailedQuizzesAsync();
+        if (quizzes == null)
+            return NotFound("There is no failed quizzes");
+
+        return Ok(quizzes);
+    }
+    
 }
