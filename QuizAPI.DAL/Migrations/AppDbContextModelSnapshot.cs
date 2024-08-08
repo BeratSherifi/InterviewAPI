@@ -242,6 +242,10 @@ namespace QuizAPI.DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("QuizId"));
 
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("Controlled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -249,6 +253,9 @@ namespace QuizAPI.DAL.Migrations
 
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Passed")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("PositionId")
                         .HasColumnType("integer");
