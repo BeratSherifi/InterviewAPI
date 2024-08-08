@@ -10,6 +10,8 @@ public class Quiz
     public DateTime StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
     public int TotalScore { get; set; }
+    
+    public bool Passed { get; set; }
     public bool Controlled { get; set; } = false;
     
     public string Comment { get; set; }

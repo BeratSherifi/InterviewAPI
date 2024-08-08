@@ -44,6 +44,7 @@ namespace QuizAPI.BLL.Services;
                 UserId = createQuizDto.UserId,
                 PositionId = createQuizDto.PositionId,
                 StartedAt = DateTime.UtcNow,
+                Comment = "",
                 UserAnswers = new List<UserAnswer>()
             };
 
@@ -94,6 +95,7 @@ namespace QuizAPI.BLL.Services;
 
             quiz.TotalScore = totalScore;
             quiz.FinishedAt = DateTime.UtcNow;
+            quiz.Passed = totalScore >= 65;
             await _quizRepository.UpdateQuizAsync(quiz);
 
             var result = _mapper.Map<QuizResultDTO>(quiz);
@@ -159,6 +161,7 @@ namespace QuizAPI.BLL.Services;
                 .Sum(ua => ua.PracticalScore ?? 0);
 
             quiz.TotalScore = theoreticalScore + practicalScore;
+            quiz.Passed = quiz.TotalScore >= 65; 
 
             await _quizRepository.UpdateQuizAsync(quiz);
             return true;

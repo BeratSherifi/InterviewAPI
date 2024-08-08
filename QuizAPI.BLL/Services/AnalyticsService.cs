@@ -65,6 +65,30 @@ public class AnalyticsService : IAnalyticsService
 
         return _mapper.Map<QuizGetAllDTO>(lowestScoringQuiz);
     }
+
+    public async Task<double> GetAverageScoreByPositionAsync(int positionId)
+    {
+        var averageScore = await _quizRepository.GetAllQuizzes()
+            .Where(q => q.PositionId == positionId)
+            .AverageAsync(q => q.TotalScore);
+        return averageScore;
+    }
+
+    public async Task<IEnumerable<QuizGetAllDTO>> GetUsersPasseddQuizzesAsync()
+    {
+        var passedQuizzesUsers = await _quizRepository.GetAllQuizzes()
+            .Where(q => q.Passed)
+            .ToListAsync();
+        return _mapper.Map<IEnumerable<QuizGetAllDTO>>(passedQuizzesUsers);
+    }
+    
+    public async Task<IEnumerable<QuizGetAllDTO>> GetUsersFailedQuizzesAsync()
+    {
+        var passedQuizzesUsers = await _quizRepository.GetAllQuizzes()
+            .Where(q => !q.Passed)
+            .ToListAsync();
+        return _mapper.Map<IEnumerable<QuizGetAllDTO>>(passedQuizzesUsers);
+    }
     
     
     

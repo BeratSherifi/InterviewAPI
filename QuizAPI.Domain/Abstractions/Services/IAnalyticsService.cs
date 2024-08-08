@@ -12,4 +12,9 @@ public interface IAnalyticsService
     Task<QuizGetAllDTO> GetHighestScoringQuizAsync();
 
     Task<QuizGetAllDTO> GetLowestScoringQuizAsync();
+    Task<double> GetAverageScoreByPositionAsync(int positionId);
+
+    Task<IEnumerable<QuizGetAllDTO>> GetUsersPasseddQuizzesAsync();
+    Task<IEnumerable<QuizGetAllDTO>> GetUsersFailedQuizzesAsync();
+
 }
