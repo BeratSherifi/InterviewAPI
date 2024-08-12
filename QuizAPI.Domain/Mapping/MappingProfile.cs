@@ -2,12 +2,12 @@ using AutoMapper;
 using QuizAPI.Domain.DTOs;
 using QuizAPI.Domain.Models;
 
-namespace QuizAPI.Domain.Mapping;
-
-public class MappingProfile : Profile
+namespace QuizAPI.Domain.Mapping
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
+        public MappingProfile()
+        {
             CreateMap<User, AuthResponseDTO>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
 
@@ -50,7 +50,7 @@ public class MappingProfile : Profile
                 .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Controlled ? "Your quiz has been reviewed." : "Please wait for our developers to review your quiz."));
 
             CreateMap<Quiz, QuizGetAllDTO>();
-            
+
             CreateMap<Question, QuestionWithChoicesDTO>()
                 .ForMember(dest => dest.Choices, opt => opt.MapFrom(src => src.Choices));
 
@@ -60,6 +60,18 @@ public class MappingProfile : Profile
             CreateMap<SubmitAnswerDTO, UserAnswer>()
                 .ForMember(dest => dest.ChoiceId, opt => opt.MapFrom(src => src.ChoiceId))
                 .ForMember(dest => dest.AnswerText, opt => opt.MapFrom(src => src.AnswerText));
-        
+
+            // Mapping for Assignment to AssignmentDTO
+            CreateMap<Assignment, AssignmentDTO>()
+                .ForMember(dest => dest.UserAnswer, opt => opt.MapFrom(src => src.UserAnswer));
+
+            // Mapping for CreateAssignmentDTO to Assignment
+            CreateMap<CreateAssignmentDTO, Assignment>()
+                .ForMember(dest => dest.UserAnswer, opt => opt.Ignore());
+
+            // Mapping for UserAnswer
+            CreateMap<UserAnswer, AssignmentUserAnswerDTO>();
+            CreateMap<CreateUserAnswerDTO, UserAnswer>();
+        }
     }
 }
