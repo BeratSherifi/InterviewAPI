@@ -102,6 +102,9 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMemoryCache();
 
