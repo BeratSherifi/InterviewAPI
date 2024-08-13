@@ -154,6 +154,53 @@ namespace QuizAPI.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("QuizAPI.Domain.Models.Assignment", b =>
+                {
+                    b.Property<int>("AssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AssignmentId"));
+
+                    b.Property<string>("AssignmentDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Controlled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Passed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PositionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("AssignmentId");
+
+                    b.HasIndex("PositionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Assignments");
+                });
+
             modelBuilder.Entity("QuizAPI.Domain.Models.Choice", b =>
                 {
                     b.Property<int>("ChoiceId")
@@ -357,6 +404,9 @@ namespace QuizAPI.DAL.Migrations
                     b.Property<string>("AnswerText")
                         .HasColumnType("text");
 
+                    b.Property<int?>("AssignmentId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("ChoiceId")
                         .HasColumnType("integer");
 
@@ -369,13 +419,16 @@ namespace QuizAPI.DAL.Migrations
                     b.Property<int?>("PracticalScore")
                         .HasColumnType("integer");
 
-                    b.Property<int>("QuestionId")
+                    b.Property<int?>("QuestionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("QuizId")
+                    b.Property<int?>("QuizId")
                         .HasColumnType("integer");
 
                     b.HasKey("UserAnswerId");
+
+                    b.HasIndex("AssignmentId")
+                        .IsUnique();
 
                     b.HasIndex("ChoiceId");
 
@@ -437,6 +490,25 @@ namespace QuizAPI.DAL.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("QuizAPI.Domain.Models.Assignment", b =>
+                {
+                    b.HasOne("QuizAPI.Domain.Models.Position", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuizAPI.Domain.Models.User", "User")
+                        .WithMany("Assignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Position");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("QuizAPI.Domain.Models.Choice", b =>
                 {
                     b.HasOne("QuizAPI.Domain.Models.Question", "Question")
@@ -480,6 +552,11 @@ namespace QuizAPI.DAL.Migrations
 
             modelBuilder.Entity("QuizAPI.Domain.Models.UserAnswer", b =>
                 {
+                    b.HasOne("QuizAPI.Domain.Models.Assignment", "Assignment")
+                        .WithOne("UserAnswer")
+                        .HasForeignKey("QuizAPI.Domain.Models.UserAnswer", "AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("QuizAPI.Domain.Models.Choice", "Choice")
                         .WithMany()
                         .HasForeignKey("ChoiceId")
@@ -488,20 +565,26 @@ namespace QuizAPI.DAL.Migrations
                     b.HasOne("QuizAPI.Domain.Models.Question", "Question")
                         .WithMany("UserAnswers")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("QuizAPI.Domain.Models.Quiz", "Quiz")
                         .WithMany("UserAnswers")
                         .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Assignment");
 
                     b.Navigation("Choice");
 
                     b.Navigation("Question");
 
                     b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("QuizAPI.Domain.Models.Assignment", b =>
+                {
+                    b.Navigation("UserAnswer")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("QuizAPI.Domain.Models.Position", b =>
@@ -525,6 +608,8 @@ namespace QuizAPI.DAL.Migrations
 
             modelBuilder.Entity("QuizAPI.Domain.Models.User", b =>
                 {
+                    b.Navigation("Assignments");
+
                     b.Navigation("Quizzes");
                 });
 #pragma warning restore 612, 618
