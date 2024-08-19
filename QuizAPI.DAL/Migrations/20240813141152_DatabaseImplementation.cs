@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace QuizAPI.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class DatabaseSchema : Migration
+    public partial class DatabaseImplementation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -173,6 +173,38 @@ namespace QuizAPI.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Assignments",
+                columns: table => new
+                {
+                    AssignmentId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    AssignmentDescription = table.Column<string>(type: "text", nullable: false),
+                    PositionId = table.Column<int>(type: "integer", nullable: false),
+                    Score = table.Column<int>(type: "integer", nullable: false),
+                    Passed = table.Column<bool>(type: "boolean", nullable: false),
+                    Controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    Comment = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Assignments", x => x.AssignmentId);
+                    table.ForeignKey(
+                        name: "FK_Assignments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignments_Positions_PositionId",
+                        column: x => x.PositionId,
+                        principalTable: "Positions",
+                        principalColumn: "PositionId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Questions",
                 columns: table => new
                 {
@@ -207,7 +239,9 @@ namespace QuizAPI.DAL.Migrations
                     StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FinishedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     TotalScore = table.Column<int>(type: "integer", nullable: false),
-                    Controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    Passed = table.Column<bool>(type: "boolean", nullable: false),
+                    Controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    Comment = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -253,8 +287,9 @@ namespace QuizAPI.DAL.Migrations
                 {
                     UserAnswerId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    QuizId = table.Column<int>(type: "integer", nullable: false),
-                    QuestionId = table.Column<int>(type: "integer", nullable: false),
+                    QuizId = table.Column<int>(type: "integer", nullable: true),
+                    AssignmentId = table.Column<int>(type: "integer", nullable: true),
+                    QuestionId = table.Column<int>(type: "integer", nullable: true),
                     ChoiceId = table.Column<int>(type: "integer", nullable: true),
                     IsCorrect = table.Column<bool>(type: "boolean", nullable: true),
                     AnswerText = table.Column<string>(type: "text", nullable: true),
@@ -264,6 +299,12 @@ namespace QuizAPI.DAL.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserAnswers", x => x.UserAnswerId);
+                    table.ForeignKey(
+                        name: "FK_UserAnswers_Assignments_AssignmentId",
+                        column: x => x.AssignmentId,
+                        principalTable: "Assignments",
+                        principalColumn: "AssignmentId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserAnswers_Choices_ChoiceId",
                         column: x => x.ChoiceId,
@@ -322,6 +363,16 @@ namespace QuizAPI.DAL.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Assignments_PositionId",
+                table: "Assignments",
+                column: "PositionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignments_UserId",
+                table: "Assignments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Choices_QuestionId",
                 table: "Choices",
                 column: "QuestionId");
@@ -340,6 +391,12 @@ namespace QuizAPI.DAL.Migrations
                 name: "IX_Quizzes_UserId",
                 table: "Quizzes",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAnswers_AssignmentId",
+                table: "UserAnswers",
+                column: "AssignmentId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserAnswers_ChoiceId",
@@ -380,6 +437,9 @@ namespace QuizAPI.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Assignments");
 
             migrationBuilder.DropTable(
                 name: "Choices");
