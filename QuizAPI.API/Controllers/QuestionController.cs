@@ -17,7 +17,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpGet]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetAllQuestions()
         {
             var questions = await _questionService.GetAllQuestionsAsync();
@@ -25,7 +25,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpGet("{id}")]
-       // [Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<QuestionDTO>> GetQuestionById(int id)
         {
             var question = await _questionService.GetQuestionByIdAsync(id);
@@ -38,7 +38,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpGet("position/{positionId}")]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionsByPosition(int positionId)
         {
             var questions = await _questionService.GetQuestionsByPositionIdAsync(positionId);
@@ -46,7 +46,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpPost]
-       // [Authorize(Policy = "Admin")]
+       [Authorize(Policy = "Admin")]
         public async Task<ActionResult<QuestionDTO>> AddQuestion(CreateQuestionDTO createQuestionDto)
         {
             var question = await _questionService.AddQuestionAsync(createQuestionDto);
@@ -54,7 +54,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpPut("{id}")]
-       // [Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<QuestionDTO>> UpdateQuestion(int id, CreateQuestionDTO updateQuestionDto)
         {
             var question = await _questionService.UpdateQuestionAsync(id, updateQuestionDto);
@@ -67,7 +67,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult> DeleteQuestion(int id)
         {
             var success = await _questionService.DeleteQuestionAsync(id);

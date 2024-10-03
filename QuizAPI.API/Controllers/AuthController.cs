@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using QuizAPI.BLL.Services;
@@ -90,12 +91,43 @@ public class AuthController : ControllerBase
         var response = await _authService.GetUsersInRoleAsync(roleName);
         return Ok(response);
     }
-    
-   
 
+    [Authorize(Roles = "Admin")] // Ensure only admins can access this endpoint
+    [HttpGet("users")] // Set the route for getting all users
+    public async Task<ActionResult<List<User>>> GetAllUsers()
+    {
+        try
+        {
+            var users = await _authService.GetAllUsersAsync();
+            return Ok(users);
+        }
+        catch (ApplicationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
-    
-    
+    [Authorize(Roles = "Admin")] // Ensure only admins can access this endpoint
+    [HttpDelete("users/{userId}")] // Set the route for deleting a user
+    public async Task<ActionResult> DeleteUser(string userId)
+    {
+        try
+        {
+            await _authService.DeleteUserAsync(userId);
+            return Ok($"User with ID '{userId}' deleted successfully.");
+        }
+        catch (ApplicationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
 
 }
+
+
+
+
+
+
+
