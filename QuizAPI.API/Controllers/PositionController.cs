@@ -36,7 +36,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpPost]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<PositionDTO>> AddPosition(CreatePositionDTO createPositionDto)
         {
             var position = await _positionService.AddPositionAsync(createPositionDto);
@@ -44,7 +44,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<PositionDTO>> UpdatePosition(int id, CreatePositionDTO updatePositionDto)
         {
             var position = await _positionService.UpdatePositionAsync(id, updatePositionDto);
@@ -57,7 +57,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpDelete("{id}")]
-       // [Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult> DeletePosition(int id)
         {
             var success = await _positionService.DeletePositionAsync(id);

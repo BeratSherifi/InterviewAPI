@@ -12,4 +12,8 @@ public interface IAuthService
     Task AssignRoleToUserAsync(string username, string roleName);
     Task<List<IdentityRole>> GetRolesAsync();
     Task<List<User>> GetUsersInRoleAsync(string roleName);
+
+    Task<List<User>> GetAllUsersAsync();
+
+    Task DeleteUserAsync(string userId);
 }

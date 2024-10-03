@@ -18,7 +18,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpGet]
-        //[Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Admin")]
         public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAllQuizzes()
         {
             var quizzes = await _quizService.GetAllQuizzesAsync();
@@ -27,7 +27,7 @@ namespace QuizAPI.API.Controllers;
 
 
         [HttpPost]
-        //[Authorize(Policy = "User")]
+        [Authorize(Policy = "User")]
         public async Task<ActionResult<QuizDTO>> AddQuiz(CreateQuizDTO createQuizDto)
         {
             var quiz = await _quizService.AddQuizAsync(createQuizDto);
@@ -47,7 +47,7 @@ namespace QuizAPI.API.Controllers;
         }
 
         [HttpDelete("{id}")]
-       // [Authorize(Policy = "AdminOrUser")]
+       [Authorize(Policy = "AdminOrUser")]
         public async Task<ActionResult> DeleteQuiz(int id)
         {
             var success = await _quizService.DeleteQuizAsync(id);
@@ -62,7 +62,7 @@ namespace QuizAPI.API.Controllers;
 
 
         [HttpPost("submit")]
-        //[Authorize(Policy = "User")]
+        [Authorize(Policy = "User")]
         public async Task<ActionResult<QuizResultDTO>> SubmitQuiz([FromBody] SubmitQuizDTO submitQuizDto)
         {
             if (submitQuizDto == null)
@@ -81,7 +81,7 @@ namespace QuizAPI.API.Controllers;
 
         
         [HttpPost("review")]
-       // [Authorize(Policy = "Admin")]
+       [Authorize(Policy = "Admin")]
         public async Task<ActionResult> ReviewPracticalAnswers([FromBody] ReviewPracticalAnswersDTO reviewDto)
         {
             if (reviewDto == null || reviewDto.Answers == null || !reviewDto.Answers.Any())
@@ -100,7 +100,7 @@ namespace QuizAPI.API.Controllers;
 
 
         [HttpGet("{id}")]
-        //[Authorize(Policy = "AdminOrUser")]
+        [Authorize(Policy = "AdminOrUser")]
         public async Task<ActionResult<QuizDTO>> GetQuizById(int id)
         {
             var quiz = await _quizService.GetQuizByIdAsync(id);
@@ -113,7 +113,7 @@ namespace QuizAPI.API.Controllers;
         }
         
         [HttpGet("results/{userId}")]
-        //[Authorize(Policy = "AdminOrUser")]
+        [Authorize(Policy = "AdminOrUser")]
         public async Task<ActionResult<IEnumerable<QuizResultDTO>>> GetQuizResultsByUserId(string userId)
         {
             var results = await _quizService.GetQuizResultsByUserIdAsync(userId);

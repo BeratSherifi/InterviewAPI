@@ -105,4 +105,27 @@ namespace QuizAPI.BLL.Services;
         {
             return (await _userManager.GetUsersInRoleAsync(roleName)).ToList();
         }
+
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _userManager.Users.ToListAsync(); // Retrieve all users
+        }
+
+    public async Task DeleteUserAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new ApplicationException($"User with ID '{userId}' not found.");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new ApplicationException("Failed to delete the user. Errors: " + string.Join(", ", result.Errors));
+        }
     }
+
+
+}
