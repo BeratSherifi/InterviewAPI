@@ -5,7 +5,7 @@
 namespace QuizAPI.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class DatabaseSchema2 : Migration
+    public partial class AddQuizIdToAssignment : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
