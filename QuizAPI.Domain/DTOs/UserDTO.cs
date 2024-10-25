@@ -8,4 +8,6 @@ public class UserDTO
     public DateTime CreatedAt { get; set; }
     public ICollection<QuizDTO> Quizzes { get; set; }
     public ICollection<AssignmentDTO> Assignments { get; set; }
+
+    public List<string> Roles { get; set; }
 }

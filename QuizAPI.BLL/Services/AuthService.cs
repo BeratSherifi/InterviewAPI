@@ -107,10 +107,24 @@ namespace QuizAPI.BLL.Services;
         }
 
 
-        public async Task<List<User>> GetAllUsersAsync()
+    public async Task<List<UserDTO>> GetAllUsersAsync() // Return UserDto with roles
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var userDtos = new List<UserDTO>();
+
+        foreach (var user in users)
         {
-            return await _userManager.Users.ToListAsync(); // Retrieve all users
+            var roles = await _userManager.GetRolesAsync(user);
+            userDtos.Add(new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Roles = roles.ToList() // Assign roles to the DTO
+            });
         }
+
+        return userDtos;
+    }
 
     public async Task DeleteUserAsync(string userId)
     {

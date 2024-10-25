@@ -13,7 +13,7 @@ public interface IAuthService
     Task<List<IdentityRole>> GetRolesAsync();
     Task<List<User>> GetUsersInRoleAsync(string roleName);
 
-    Task<List<User>> GetAllUsersAsync();
+    Task<List<UserDTO>> GetAllUsersAsync();
 
     Task DeleteUserAsync(string userId);
 }
