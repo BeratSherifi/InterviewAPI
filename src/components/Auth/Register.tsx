@@ -17,7 +17,8 @@ const Register: React.FC = () => {
     }
 
     try {
-      const response = await axios.post('https://localhost:7213/api/auth/register', {
+      // You can safely remove `response` if you don't need to handle it.
+      await axios.post('https://localhost:7213/api/auth/register', {
         email,
         password,
       });
