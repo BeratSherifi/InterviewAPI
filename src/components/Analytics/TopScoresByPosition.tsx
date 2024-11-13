@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Position {
   positionId: number;
@@ -37,7 +38,7 @@ const TopScoresByPosition: React.FC = () => {
 
         setPositions(response.data);
       } catch (err) {
-        console.error('Error fetching positions:', err);  // Log error if fetching fails
+        console.error('Error fetching positions:', err); // Log error if fetching fails
         setError('Failed to fetch positions.');
       }
     };
@@ -52,7 +53,7 @@ const TopScoresByPosition: React.FC = () => {
         setError('No token found, please log in.');
         return;
       }
-  
+
       const response = await axios.get(
         `https://localhost:7213/positions/${selectedPositionId}/top-scores`,
         {
@@ -61,8 +62,7 @@ const TopScoresByPosition: React.FC = () => {
           },
         }
       );
-  
-  
+
       if (response.data.length === 0) {
         setError('No quizzes found for this position.');
         setScores([]); // Clear any previous scores
@@ -71,30 +71,33 @@ const TopScoresByPosition: React.FC = () => {
         setError(null); // Clear any previous errors
       }
     } catch (err: any) {
-      // Handle specific 404 errors without logging them
       if (err.response && err.response.status === 404) {
         setError('No quizzes found for this position.');
         setScores([]); // Clear previous scores on 404
       } else {
         setError('Failed to fetch top scores.'); // General error handling
-        // Only log non-404 errors for debugging
-        if (!err.response || err.response.status !== 404) {
-          console.error('Error fetching top scores:', err);
-        }
+        console.error('Error fetching top scores:', err);
       }
     }
   };
-  
+
   const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPositionId = parseInt(event.target.value);
     if (!isNaN(selectedPositionId)) {
-      fetchTopScores(selectedPositionId);  // Fetch scores based on selected position
+      fetchTopScores(selectedPositionId); // Fetch scores based on selected position
     }
   };
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Top Scores by Position</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Top Scores by Position
+      </motion.h2>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
@@ -118,7 +121,12 @@ const TopScoresByPosition: React.FC = () => {
       </div>
 
       {/* Scores Table */}
-      <table className="min-w-full bg-gray-700">
+      <motion.table
+        className="min-w-full bg-gray-700"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <thead>
           <tr>
             <th className="border px-4 py-2">Quiz ID</th>
@@ -147,7 +155,7 @@ const TopScoresByPosition: React.FC = () => {
             </tr>
           )}
         </tbody>
-      </table>
+      </motion.table>
     </div>
   );
 };

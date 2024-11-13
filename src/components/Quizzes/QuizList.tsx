@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Quiz {
   quizId: number;
@@ -75,7 +76,6 @@ const QuizList: React.FC = () => {
     }
   };
 
-  // Helper function to get position name from position ID
   const getPositionName = (positionId: number) => {
     const position = positions.find((pos) => pos.positionId === positionId);
     return position ? position.positionName : 'Unknown Position';
@@ -83,45 +83,53 @@ const QuizList: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
-      <div className="bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
+      <motion.div
+        className="bg-gray-800 p-6 rounded-lg w-full max-w-4xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl text-white font-bold mb-4 text-center">Quiz List</h2>
 
         {error && <div className="text-red-500 text-sm mb-4 text-center">{error}</div>}
         {success && <div className="text-green-500 text-sm mb-4 text-center">{success}</div>}
 
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto hide-scrollbar">
           {quizzes.length > 0 ? (
             <ul className="space-y-4">
               {quizzes.map((quiz) => (
-                <li
+                <motion.li
                   key={quiz.quizId}
                   className="bg-gray-700 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
                   <div>
                     <p className="text-white text-lg font-semibold">Quiz ID: {quiz.quizId}</p>
                     <p className="text-gray-300">Total Score: {quiz.totalScore}</p>
                     <p className="text-gray-300">Passed: {quiz.passed ? 'Yes' : 'No'}</p>
-                    <p className="text-gray-300">
-                      Position: {getPositionName(quiz.positionId)}
-                    </p>
+                    <p className="text-gray-300">Position: {getPositionName(quiz.positionId)}</p>
                     <p className="text-gray-300">
                       Message: {quiz.controlled ? 'Your quiz has been reviewed' : 'Your quiz has not been reviewed'}
                     </p>
                   </div>
-                  <button
+                  <motion.button
                     onClick={() => handleDelete(quiz.quizId)}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full md:w-auto"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Delete
-                  </button>
-                </li>
+                  </motion.button>
+                </motion.li>
               ))}
             </ul>
           ) : (
             <div className="text-white">No quizzes found.</div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

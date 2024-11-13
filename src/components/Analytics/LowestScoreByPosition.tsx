@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Position {
   positionId: number;
@@ -61,7 +62,6 @@ const LowestScoresByPosition: React.FC = () => {
         }
       );
 
-
       if (response.data.length === 0) {
         setError('No quizzes found for this position.');
         setScores([]); // Clear any previous scores
@@ -91,7 +91,14 @@ const LowestScoresByPosition: React.FC = () => {
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Lowest Scores by Position</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Lowest Scores by Position
+      </motion.h2>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
@@ -128,13 +135,18 @@ const LowestScoresByPosition: React.FC = () => {
         <tbody>
           {scores.length > 0 ? (
             scores.map((score) => (
-              <tr key={score.quizId}>
+              <motion.tr
+                key={score.quizId}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+              >
                 <td className="border px-4 py-2">{score.quizId}</td>
                 <td className="border px-4 py-2">{score.userId}</td>
                 <td className="border px-4 py-2">{score.totalScore}</td>
                 <td className="border px-4 py-2">{score.passed ? 'Yes' : 'No'}</td>
                 <td className="border px-4 py-2">{score.controlled ? 'Yes' : 'No'}</td>
-              </tr>
+              </motion.tr>
             ))
           ) : (
             <tr>

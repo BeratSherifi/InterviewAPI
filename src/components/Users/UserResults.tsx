@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 // Helper function to decode the JWT
 const parseJwt = (token: string) => {
@@ -52,8 +53,6 @@ const UserResults: React.FC = () => {
         return;
       }
 
-      
-
       // Fetch quiz results by userId
       const response = await axios.get(`https://localhost:7213/api/Quiz/results/${userId}`, {
         headers: {
@@ -79,18 +78,25 @@ const UserResults: React.FC = () => {
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl text-white font-bold mb-6 text-center">View Your Quiz Results</h2>
+      <motion.div
+        className="bg-gray-800 p-4 sm:p-8 rounded-lg shadow-lg w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-2xl text-white font-bold mb-6 text-center">
+          View Your Quiz Results
+        </h2>
 
-      
-
-        <button
+        <motion.button
           onClick={handleFetchResults}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
           disabled={loading}
+          whileHover={!loading ? { scale: 1.05 } : undefined}
+          whileTap={!loading ? { scale: 0.95 } : undefined}
         >
           {loading ? 'Fetching Results...' : 'Fetch My Results'}
-        </button>
+        </motion.button>
 
         {error && (
           <div className="text-red-500 text-sm mt-4 text-center">
@@ -118,7 +124,7 @@ const UserResults: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

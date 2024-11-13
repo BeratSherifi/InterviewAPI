@@ -1,30 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [savedEmails, setSavedEmails] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const emails = JSON.parse(localStorage.getItem('savedEmails') || '[]');
+    const emails = JSON.parse(localStorage.getItem("savedEmails") || "[]");
     setSavedEmails(emails);
   }, []);
 
   const parseJwt = (token: string) => {
     try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
         atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
@@ -32,11 +34,26 @@ const Login: React.FC = () => {
     }
   };
 
+  const isTokenExpired = (token: string): boolean => {
+    const decoded = parseJwt(token);
+    if (decoded && decoded.exp) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      return currentTime >= decoded.exp;
+    }
+    return true;
+  };
+
   const handleLogin = async () => {
     try {
+      setIsLoggingIn(true);
       const response = await axios.post('https://localhost:7213/api/auth/login', { email, password });
 
       if (response.data.token) {
+        if (isTokenExpired(response.data.token)) {
+          setError('Session expired. Please log in again.');
+          return;
+        }
+
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userId', response.data.userId);
 
@@ -48,16 +65,21 @@ const Login: React.FC = () => {
           setSavedEmails(updatedEmails);
         }
 
-        if (decodedToken && decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] === 'Admin') {
-          navigate('/admin');
-        } else {
-          navigate('/user');
-        }
+        setTimeout(() => {
+          if (decodedToken && decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] === 'Admin') {
+            navigate('/admin');
+          } else {
+            navigate('/user');
+          }
+        }, 500);
       } else {
         setError('Invalid login response. No token received.');
       }
-    } catch (error) {
+    } catch (error: any) {
       setError('Login failed. Please check your credentials.');
+      console.error('Login error:', error.response ? error.response.data : error);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -76,7 +98,12 @@ const Login: React.FC = () => {
   );
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-900">
+    <motion.div
+      className="flex h-screen items-center justify-center bg-gray-900"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: isLoggingIn ? 0 : 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md relative">
         <h2 className="text-2xl text-white font-bold mb-6 text-center">Login</h2>
 
@@ -90,7 +117,6 @@ const Login: React.FC = () => {
             onFocus={() => setShowSuggestions(true)}
           />
 
-          {/* Conditionally render the suggestion box only when there are suggestions */}
           {showSuggestions && email && filteredSuggestions.length > 0 && (
             <div className="absolute left-0 right-0 z-10 mt-1 bg-white shadow-lg rounded-md border border-gray-300 max-h-40 overflow-y-auto">
               {filteredSuggestions.map((suggestion) => (
@@ -113,13 +139,15 @@ const Login: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
-        
-        <button
+
+        <motion.button
           onClick={handleLogin}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Login
-        </button>
+        </motion.button>
 
         {error && (
           <div className="text-red-500 text-sm mt-4 text-center">
@@ -134,7 +162,7 @@ const Login: React.FC = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

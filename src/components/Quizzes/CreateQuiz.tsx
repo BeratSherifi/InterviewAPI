@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Position {
   positionId: number;
@@ -19,29 +20,24 @@ const CreateQuiz: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [quizId, setQuizId] = useState<number | null>(null);
-  const [questions, setQuestions] = useState<Question[] | null>(null);  // For storing the fetched questions
+  const [questions, setQuestions] = useState<Question[] | null>(null);
   const [answers, setAnswers] = useState<{ questionId: number; choiceId?: number; answerText?: string }[]>([]);
 
-  // Fetch available positions on component mount
   useEffect(() => {
     const fetchPositions = async () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setPositions(response.data);
       } catch (error) {
         setError('Failed to fetch positions.');
       }
     };
-
     fetchPositions();
   }, []);
 
-  // Handle quiz creation and fetch questions after quiz is created
   const handleSubmit = async () => {
     if (!selectedPositionId) {
       setError('Please select a position.');
@@ -58,27 +54,15 @@ const CreateQuiz: React.FC = () => {
 
       const response = await axios.post(
         'https://localhost:7213/api/Quiz',
-        { positionId: selectedPositionId, userId: userId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { positionId: selectedPositionId, userId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.status === 200 || response.status === 201) {
         const quizId = response.data.quizId;
         setQuizId(quizId);
         setSuccess('Quiz created successfully!');
-
-        // Fetch the questions after quiz creation
-        const questions = response.data.questions;
-        if (questions) {
-          setQuestions(questions);
-        } else {
-          setError('Failed to fetch questions.');
-        }
-
+        setQuestions(response.data.questions || []);
         setError(null);
       } else {
         setError('Failed to create quiz.');
@@ -88,7 +72,6 @@ const CreateQuiz: React.FC = () => {
     }
   };
 
-  // Handle user input for answers (both theoretical and practical)
   const handleAnswerChange = (questionId: number, choiceId?: number, answerText?: string) => {
     setAnswers((prev) => {
       const existing = prev.find((ans) => ans.questionId === questionId);
@@ -102,7 +85,6 @@ const CreateQuiz: React.FC = () => {
     });
   };
 
-  // Submit the quiz
   const handleSubmitQuiz = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -111,7 +93,7 @@ const CreateQuiz: React.FC = () => {
         return;
       }
 
-      const response = await axios.post(
+      await axios.post(
         'https://localhost:7213/api/Quiz/submit',
         { quizId, answers },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -125,11 +107,15 @@ const CreateQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900"> {/* Responsive background */}
-      <div className="bg-gray-800 p-6 md:p-8 rounded-lg shadow-lg w-full max-w-3xl mx-auto"> {/* Responsive container */}
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <motion.div
+        className="bg-gray-800 p-6 md:p-8 rounded-lg shadow-lg w-full max-w-3xl mx-auto"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl text-white font-bold mb-6 text-center">Create Quiz</h2>
 
-        {/* Position Selector */}
         <select
           value={selectedPositionId || ''}
           onChange={(e) => setSelectedPositionId(Number(e.target.value))}
@@ -143,35 +129,32 @@ const CreateQuiz: React.FC = () => {
           ))}
         </select>
 
-        {/* Create Quiz Button */}
-        <button
+        <motion.button
           onClick={handleSubmit}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Create Quiz
-        </button>
+        </motion.button>
 
-        {/* Display Questions and Submit */}
         {questions && questions.length > 0 && (
-          <div className="mt-6 h-80 overflow-y-auto bg-gray-900 p-4 rounded-lg hide-scrollbar"> {/* Scrollable container */}
+          <div className="mt-6 h-80 overflow-y-auto bg-gray-900 p-4 rounded-lg hide-scrollbar">
             {questions.map((question) => (
               <div key={question.questionId} className="mb-4">
                 <h3 className="text-white">{question.text}</h3>
-
-                {/* Theoretical Questions */}
                 {question.questionType === 'Theoretical' ? (
                   question.choices.map((choice) => (
-                    <label key={choice.choiceId} className="block text-white mb-3"> {/* Added margin for space */}
+                    <label key={choice.choiceId} className="block text-white mb-3">
                       <input
                         type="radio"
                         name={`question-${question.questionId}`}
                         onChange={() => handleAnswerChange(question.questionId, choice.choiceId)}
                       />
-                      <span className="ml-2">{choice.text}</span> {/* Add space between input and text */}
+                      <span className="ml-2">{choice.text}</span>
                     </label>
                   ))
                 ) : (
-                  /* Practical Questions */
                   <textarea
                     placeholder="Your answer"
                     onChange={(e) => handleAnswerChange(question.questionId, undefined, e.target.value)}
@@ -181,18 +164,20 @@ const CreateQuiz: React.FC = () => {
               </div>
             ))}
 
-            <button
+            <motion.button
               onClick={handleSubmitQuiz}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg mt-4"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Submit Quiz
-            </button>
+            </motion.button>
           </div>
         )}
 
         {error && <div className="text-red-500 text-sm mt-4 text-center">{error}</div>}
         {success && <div className="text-green-500 text-sm mt-4 text-center">{success}</div>}
-      </div>
+      </motion.div>
     </div>
   );
 };

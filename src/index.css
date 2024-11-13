@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Add this to your CSS file */
+.table-container {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    width: 100%; /* Make sure it takes full width */
+  }
+  

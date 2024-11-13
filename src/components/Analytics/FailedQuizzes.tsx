@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const FailedQuizzes: React.FC = () => {
   const [quizzes, setQuizzes] = useState<any[]>([]);
@@ -23,11 +24,23 @@ const FailedQuizzes: React.FC = () => {
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Failed Quizzes</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Failed Quizzes
+      </motion.h2>
       {error ? (
         <p className="text-red-500 mb-4">{error}</p>
       ) : (
-        <table className="min-w-full bg-gray-700">
+        <motion.table
+          className="min-w-full bg-gray-700"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           <thead>
             <tr>
               <th className="border px-4 py-2">Quiz ID</th>
@@ -38,11 +51,16 @@ const FailedQuizzes: React.FC = () => {
           <tbody>
             {quizzes.length > 0 ? (
               quizzes.map((quiz) => (
-                <tr key={quiz.quizId}>
+                <motion.tr
+                  key={quiz.quizId}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <td className="border px-4 py-2">{quiz.quizId}</td>
                   <td className="border px-4 py-2">{quiz.userId}</td>
                   <td className="border px-4 py-2">{quiz.totalScore}</td>
-                </tr>
+                </motion.tr>
               ))
             ) : (
               <tr>
@@ -52,7 +70,7 @@ const FailedQuizzes: React.FC = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </motion.table>
       )}
     </div>
   );

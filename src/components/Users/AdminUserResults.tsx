@@ -1,32 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-
-// Helper function to decode the JWT
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(function (c) {
-          return '%' + ('00' + ('0' + c.charCodeAt(0).toString(16)).slice(-2));
-        })
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-};
+import { motion } from 'framer-motion'; // Import motion for animations
 
 const AdminUserResults: React.FC = () => {
   const [userResults, setUserResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>(''); // Admin inputs the user's email
-  const [userId, setUserId] = useState<string | null>(null);
 
   // Function to fetch user ID based on email
   const fetchUserIdByEmail = async () => {
@@ -39,18 +19,14 @@ const AdminUserResults: React.FC = () => {
         return null;
       }
 
-      // Fetching the list of users
       const response = await axios.get('https://localhost:7213/api/Auth/users', {
-        headers: {
-          Authorization: `Bearer ${token}`, // Ensure the token is included
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const users = response.data;
       const user = users.find((u: any) => u.email === email);
-
       if (user) {
-        return user.id; // Return the user ID based on the email
+        return user.id;
       } else {
         setError('No user found with that email.');
         return null;
@@ -75,11 +51,8 @@ const AdminUserResults: React.FC = () => {
         return;
       }
 
-      // Fetch quiz results by userId
       const response = await axios.get(`https://localhost:7213/api/Quiz/results/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the header
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setUserResults(response.data);
@@ -94,7 +67,7 @@ const AdminUserResults: React.FC = () => {
 
   // Handler to fetch results when admin submits email
   const handleFetchResults = async () => {
-    setError(null); // Clear previous errors
+    setError(null);
     const fetchedUserId = await fetchUserIdByEmail();
     if (fetchedUserId) {
       await fetchQuizResults(fetchedUserId);
@@ -103,7 +76,12 @@ const AdminUserResults: React.FC = () => {
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+      <motion.div
+        className="bg-gray-800 p-4 sm:p-8 rounded-lg shadow-lg w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl text-white font-bold mb-6 text-center">View User Quiz Results</h2>
 
         <input
@@ -114,13 +92,15 @@ const AdminUserResults: React.FC = () => {
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
 
-        <button
+        <motion.button
           onClick={handleFetchResults}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           disabled={loading}
         >
           {loading ? 'Fetching Results...' : 'Fetch Results'}
-        </button>
+        </motion.button>
 
         {error && (
           <div className="text-red-500 text-sm mt-4 text-center">
@@ -148,7 +128,7 @@ const AdminUserResults: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

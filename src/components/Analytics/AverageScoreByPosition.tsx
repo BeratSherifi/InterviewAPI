@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Position {
   positionId: number;
@@ -81,12 +82,24 @@ const AverageScoreByPosition: React.FC = () => {
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Average Score by Position</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Average Score by Position
+      </motion.h2>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {/* Position Dropdown */}
-      <div className="mb-4">
+      <motion.div
+        className="mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <label htmlFor="position" className="block mb-2">
           Select Position:
         </label>
@@ -102,14 +115,21 @@ const AverageScoreByPosition: React.FC = () => {
             </option>
           ))}
         </select>
-      </div>
+      </motion.div>
 
       {/* Average Score Display */}
       {averageScore && (
-        <div className="mt-4">
-          <h3 className="text-xl">Average Score for Position: {positions.find(p => p.positionId === averageScore.positionId)?.positionName}</h3>
+        <motion.div
+          className="mt-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h3 className="text-xl">
+            Average Score for Position: {positions.find(p => p.positionId === averageScore.positionId)?.positionName}
+          </h3>
           <p className="text-lg">{averageScore.averageScore}</p>
-        </div>
+        </motion.div>
       )}
     </div>
   );

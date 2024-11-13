@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const CreatePosition: React.FC = () => {
   const [positionName, setPositionName] = useState('');
@@ -35,7 +36,12 @@ const CreatePosition: React.FC = () => {
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+      <motion.div
+        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <h2 className="text-2xl text-white font-bold mb-6 text-center">Create Position</h2>
         <input
           type="text"
@@ -44,12 +50,14 @@ const CreatePosition: React.FC = () => {
           onChange={(e) => setPositionName(e.target.value)}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
-        <button
+        <motion.button
           onClick={handleCreatePosition}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Create Position
-        </button>
+        </motion.button>
 
         {error && (
           <div className="text-red-500 text-sm mt-4 text-center">
@@ -61,7 +69,7 @@ const CreatePosition: React.FC = () => {
             {success}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

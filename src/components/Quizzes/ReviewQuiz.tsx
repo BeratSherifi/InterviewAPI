@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface UserAnswer {
   userAnswerId: number;
@@ -22,8 +23,10 @@ const ReviewQuiz: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [questionTexts, setQuestionTexts] = useState<{ [key: number]: string }>({});
+  
+  // Reference to the review section
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all quizzes on mount
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
@@ -34,38 +37,29 @@ const ReviewQuiz: React.FC = () => {
         }
 
         const response = await axios.get('https://localhost:7213/api/Quiz', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         setQuizzes(response.data);
       } catch (error) {
         setError('Failed to fetch quizzes.');
-        console.error('Error fetching quizzes:', error);
       }
     };
 
     fetchQuizzes();
   }, []);
 
-  // Fetch the question text for a given question ID
   const fetchQuestionText = async (questionId: number) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`https://localhost:7213/api/Question/${questionId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.text; // Return the question text
-    } catch (error) {
-      console.error('Error fetching question text:', error);
-      return 'Failed to load question text'; // Fallback in case of error
+      return response.data.text;
+    } catch {
+      return 'Failed to load question text';
     }
   };
 
-  // Handle quiz selection and fetch details
   const handleQuizSelection = async (quizId: number) => {
     setError(null);
     setSuccess(null);
@@ -78,44 +72,36 @@ const ReviewQuiz: React.FC = () => {
       }
 
       const response = await axios.get(`https://localhost:7213/api/Quiz/${quizId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const quizDetails: QuizDetails = response.data;
-
-      // Get only the last 5 questions assuming they are practical ones
       const practicalQuestions = quizDetails.userAnswers.slice(-5);
 
-      // Fetch question texts for all the practical questions
       const newQuestionTexts: { [key: number]: string } = {};
       for (const answer of practicalQuestions) {
         const text = await fetchQuestionText(answer.questionId);
         newQuestionTexts[answer.questionId] = text;
       }
 
-      setQuestionTexts(newQuestionTexts); // Update state with the fetched question texts
+      setQuestionTexts(newQuestionTexts);
       setSelectedQuiz(quizDetails);
       setAnswers(practicalQuestions);
-    } catch (error) {
+
+      // Scroll to the review section
+      reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch {
       setError('Failed to fetch quiz details.');
-      console.error('Error fetching quiz details:', error);
     }
   };
 
-  // Handle score change for practical questions
   const handleScoreChange = (userAnswerId: number, score: number) => {
-
-    if (score < 0) score = 0;
-    if (score > 10) score = 10;
     setAnswerScores((prevScores) => ({
       ...prevScores,
-      [userAnswerId]: score,
+      [userAnswerId]: Math.max(0, Math.min(10, score)),
     }));
   };
 
-  // Handle submit review
   const handleSubmitReview = async () => {
     if (!selectedQuiz) return;
 
@@ -130,15 +116,13 @@ const ReviewQuiz: React.FC = () => {
         quizId: selectedQuiz.quizId,
         answers: answers.map((answer) => ({
           userAnswerId: answer.userAnswerId,
-          score: answerScores[answer.userAnswerId] || 0, // Assign a score to each practical question
+          score: answerScores[answer.userAnswerId] || 0,
         })),
         comment,
       };
 
       const response = await axios.post('https://localhost:7213/api/Quiz/review', reviewPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -147,24 +131,30 @@ const ReviewQuiz: React.FC = () => {
       } else {
         setError('Failed to submit quiz review.');
       }
-    } catch (error) {
+    } catch {
       setError('Error submitting quiz review.');
-      console.error('Error submitting quiz review:', error);
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
-      <div className="bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
-        <h2 className="text-2xl text-white font-bold mb-4 text-center">Review Quizzes</h2>
+      <motion.div
+        className="bg-gray-800 p-6 rounded-lg w-full max-w-5xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-3xl text-white font-bold mb-6 text-center">Review Quizzes</h2>
 
-        {/* Quiz List */}
         <div className="mb-4">
           <ul className="space-y-4">
             {quizzes.map((quiz) => (
-              <li
+              <motion.li
                 key={quiz.quizId}
                 className="bg-gray-700 p-4 rounded-lg flex justify-between items-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
                 <div>
                   <p className="text-white">Quiz ID: {quiz.quizId}</p>
@@ -173,30 +163,34 @@ const ReviewQuiz: React.FC = () => {
                   <p className="text-gray-300">Passed: {quiz.passed ? 'Yes' : 'No'}</p>
                   <p className="text-gray-300">Controlled: {quiz.controlled ? 'Yes' : 'No'}</p>
                 </div>
-                <button
+                <motion.button
                   onClick={() => handleQuizSelection(quiz.quizId)}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Review Quiz
-                </button>
-              </li>
+                </motion.button>
+              </motion.li>
             ))}
           </ul>
         </div>
 
-        {/* Review Selected Quiz */}
         {selectedQuiz && (
-          <div className="mt-6">
+          <motion.div
+            ref={reviewSectionRef}
+            className="mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <h3 className="text-lg text-white font-bold">Reviewing Quiz ID: {selectedQuiz.quizId}</h3>
-            <h4 className="text-md text-gray-300">Practical Questions</h4>
             {answers.map((answer, index) => (
               <div key={index} className="mb-4 bg-gray-700 p-4 rounded-lg">
                 <p className="text-white">
                   Question: {questionTexts[answer.questionId] || 'Loading question...'}
                 </p>
                 <p className="text-white">Answer Text: {answer.answerText || 'No answer provided'}</p>
-
-                {/* Input for the score */}
                 <input
                   type="number"
                   placeholder="Enter score"
@@ -206,30 +200,25 @@ const ReviewQuiz: React.FC = () => {
                 />
               </div>
             ))}
-
-            <div className="mt-6">
-              <textarea
-                placeholder="Add your comments here..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white"
-              ></textarea>
-            </div>
-
-            {/* Submit Button */}
-            <button
+            <textarea
+              placeholder="Add your comments here..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-white"
+            ></textarea>
+            <motion.button
               onClick={handleSubmitReview}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg mt-4"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Submit Review
-            </button>
-
-            {/* Success/Error message at the bottom */}
+            </motion.button>
             {error && <div className="text-red-500 text-sm mt-4 text-center">{error}</div>}
             {success && <div className="text-green-500 text-sm mt-4 text-center">{success}</div>}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

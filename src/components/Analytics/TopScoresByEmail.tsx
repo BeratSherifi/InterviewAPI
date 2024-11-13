@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const TopScoresByEmail: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -18,7 +19,6 @@ const TopScoresByEmail: React.FC = () => {
         return null;
       }
 
-      // Fetching the list of users (ensure the endpoint is correct)
       const response = await axios.get('https://localhost:7213/api/Auth/users', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +54,6 @@ const TopScoresByEmail: React.FC = () => {
         return;
       }
 
-      // Fetching top scores by userId
       const response = await axios.get(`https://localhost:7213/users/${userId}/topscores-by-user-id`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -82,7 +81,14 @@ const TopScoresByEmail: React.FC = () => {
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Top Scores by User Email</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Top Scores by User Email
+      </motion.h2>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
@@ -111,7 +117,12 @@ const TopScoresByEmail: React.FC = () => {
 
       {/* Quiz Results Table */}
       {userResults.length > 0 && (
-        <div className="mt-6">
+        <motion.div
+          className="mt-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           <h3 className="text-xl text-white mb-4">Quiz Results:</h3>
           <table className="min-w-full bg-gray-700">
             <thead>
@@ -133,7 +144,7 @@ const TopScoresByEmail: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
       )}
     </div>
   );

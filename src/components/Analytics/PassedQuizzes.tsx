@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const PassedQuizzes: React.FC = () => {
   const [quizzes, setQuizzes] = useState<any[]>([]);
@@ -23,7 +24,14 @@ const PassedQuizzes: React.FC = () => {
 
   return (
     <div className="p-8 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Passed Quizzes</h2>
+      <motion.h2
+        className="text-2xl mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Passed Quizzes
+      </motion.h2>
       {error ? (
         <p className="text-red-500 mb-4">{error}</p>
       ) : (
@@ -38,11 +46,16 @@ const PassedQuizzes: React.FC = () => {
           <tbody>
             {quizzes.length > 0 ? (
               quizzes.map((quiz) => (
-                <tr key={quiz.quizId}>
+                <motion.tr
+                  key={quiz.quizId}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
                   <td className="border px-4 py-2">{quiz.quizId}</td>
                   <td className="border px-4 py-2">{quiz.userId}</td>
                   <td className="border px-4 py-2">{quiz.totalScore}</td>
-                </tr>
+                </motion.tr>
               ))
             ) : (
               <tr>

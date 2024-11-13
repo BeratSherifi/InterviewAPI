@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -50,18 +51,27 @@ const UserList: React.FC = () => {
           </thead>
           <tbody>
             {users.map(user => (
-              <tr key={user.id} className="hover:bg-gray-600">
+              <motion.tr
+                key={user.id}
+                className="hover:bg-gray-600 transition-colors duration-200"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
                 <td className="py-2 px-4 text-left">{user.email}</td>
                 <td className="flex py-2 px-4 text-center">{user.roles.join(', ')}</td>
                 <td className="py-2 px-4 text-right">
-                  <button
-                    className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded"
+                  <motion.button
+                    className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded transition-colors duration-200"
                     onClick={() => handleDelete(user.id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Delete
-                  </button>
+                  </motion.button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>

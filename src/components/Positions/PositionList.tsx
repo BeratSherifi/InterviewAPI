@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 interface Position {
   positionId: number;
@@ -93,33 +94,43 @@ const PositionList: React.FC = () => {
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg">
+      <motion.div
+        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <h2 className="text-2xl text-white font-bold mb-6 text-center">Manage Positions</h2>
         {error && <div className="text-red-500 text-center">{error}</div>}
         {success && <div className="text-green-500 text-center">{success}</div>}
         <div className="max-h-96 overflow-y-auto">
           <ul className="space-y-3">
             {positions.map((position) => (
-              <li
+              <motion.li
                 key={position.positionId}
                 className="flex justify-between items-center bg-gray-700 p-4 rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
                 <span className="text-white">{position.positionName}</span>
                 <div>
-                  <button
+                  <motion.button
                     onClick={() => handleEdit(position)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mr-2"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg mr-2 transition duration-200"
+                    whileHover={{ scale: 1.05 }} // Scale up on hover
                   >
                     Edit
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     onClick={() => handleDelete(position.positionId)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200"
+                    whileHover={{ scale: 1.05 }} // Scale up on hover
                   >
                     Delete
-                  </button>
+                  </motion.button>
                 </div>
-              </li>
+              </motion.li>
             ))}
           </ul>
         </div>
@@ -134,22 +145,24 @@ const PositionList: React.FC = () => {
               className="w-full p-2 mb-4 border border-gray-600 rounded-lg bg-gray-600 text-white"
             />
             <div className="flex justify-end">
-              <button
+              <motion.button
                 onClick={handleUpdate}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg mr-2"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg mr-2"
+                whileHover={{ scale: 1.05 }} // Scale up on hover
               >
                 Update
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => setSelectedPosition(null)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                whileHover={{ scale: 1.05 }} // Scale up on hover
               >
                 Cancel
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };
