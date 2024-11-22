@@ -10,9 +10,7 @@ const parseJwt = (token: string) => {
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
-        .map(function (c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
         .join('')
     );
     return JSON.parse(jsonPayload);
@@ -27,6 +25,7 @@ const UserResults: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [noResultsMessage, setNoResultsMessage] = useState<string | null>(null);
 
   // Extract the userId from the token
   useEffect(() => {
@@ -60,7 +59,12 @@ const UserResults: React.FC = () => {
         },
       });
 
-      setUserResults(response.data);
+      if (response.data.length === 0) {
+        setNoResultsMessage("You haven't participated in any quizzes yet. Start your journey today!");
+      } else {
+        setUserResults(response.data);
+      }
+
       setError(null);
     } catch (error) {
       console.error('Error fetching quiz results:', error);
@@ -73,6 +77,7 @@ const UserResults: React.FC = () => {
   // Handler to fetch results when user submits email
   const handleFetchResults = async () => {
     setError(null); // Clear previous errors
+    setNoResultsMessage(null); // Clear previous no results message
     await fetchQuizResults();
   };
 
@@ -104,20 +109,26 @@ const UserResults: React.FC = () => {
           </div>
         )}
 
+        {noResultsMessage && (
+          <div className="text-red-500 text-sm mt-4 text-center">
+            {noResultsMessage}
+          </div>
+        )}
+
         {/* Scrollable Quiz Results */}
         {userResults.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-xl text-white mb-4">Quiz Results:</h3>
+            <h3 className="text-xl text-white mb-4">Your Quiz Results:</h3>
             <div className="max-h-64 overflow-y-auto bg-gray-700 p-4 rounded-lg hide-scrollbar">
               <ul className="text-white">
                 {userResults.map((result: any) => (
                   <li key={result.quizId} className="mb-4">
-                    <p>Quiz ID: {result.quizId}</p>
-                    <p>Total Score: {result.totalScore}</p>
-                    <p>Passed: {result.passed ? 'Yes' : 'No'}</p>
-                    <p>Controlled: {result.controlled ? 'Yes' : 'No'}</p>
-                    <p>Message: {result.message || 'No message available'}</p>
-                    <p>Comment: {result.comment || 'No comment available'}</p>
+                    <p><strong>Quiz ID:</strong> {result.quizId}</p>
+                    <p><strong>Total Score:</strong> {result.totalScore}</p>
+                    <p><strong>Passed:</strong> {result.passed ? 'Yes' : 'No'}</p>
+                    <p><strong>Controlled:</strong> {result.controlled ? 'Yes' : 'No'}</p>
+                    <p><strong>Message:</strong> {result.message || 'No message available'}</p>
+                    <p><strong>Comment:</strong> {result.comment || 'No comment available'}</p>
                   </li>
                 ))}
               </ul>

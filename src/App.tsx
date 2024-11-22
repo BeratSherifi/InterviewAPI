@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useCallback,useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import QuizList from "./components/Quizzes/QuizList";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
@@ -25,7 +25,7 @@ import PassedQuizzes from "./components/Analytics/PassedQuizzes";
 import FailedQuizzes from "./components/Analytics/FailedQuizzes";
 import TopScoresByEmail from "./components/Analytics/TopScoresByEmail";
 
-// Helper function to parse JWT without using jwt-decode
+// Helper function to parse and check JWT expiration
 function parseJwt(token: string) {
   try {
     const base64Url = token.split(".")[1];
@@ -36,15 +36,27 @@ function parseJwt(token: string) {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
-    return JSON.parse(jsonPayload); // Return the decoded payload
+    return JSON.parse(jsonPayload);
   } catch (error) {
     console.error("Error parsing token:", error);
     return null;
   }
 }
 
+function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  const decoded = parseJwt(token);
+  if (decoded && decoded.exp) {
+    const currentTime = Math.floor(Date.now() / 1000);
+    return currentTime >= decoded.exp;
+  }
+  return true;
+}
+
 function App() {
+  const navigate = useNavigate();
   const token = localStorage.getItem("token"); // Retrieve the JWT token
+  const [isTokenExpiredWarning, setIsTokenExpiredWarning] = useState(false);
   let userRole = ""; // Initialize userRole
 
   if (token) {
@@ -58,9 +70,37 @@ function App() {
     }
   }
 
+  // Logout function wrapped with useCallback
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    navigate("/login"); // Redirect to login page
+  }, [navigate]);
+
+  // Automatic token expiration and logout handling
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = localStorage.getItem("token");
+      if (token && isTokenExpired(token)) {
+        setIsTokenExpiredWarning(true); // Trigger logout if token is expired
+      }
+    }, 1000 * 60); // Check every minute
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []); // Add handleLogout to dependencies
+
   return (
     <div className="App">
       <header className="App-header">
+
+         {/* Token expiration warning */}
+         {isTokenExpiredWarning && (
+          <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-center p-4 z-50">
+            Your session has expired. Please log in again.
+          </div>
+        )}
+
+        
         <Routes>
           {/* Default route redirects to login */}
           <Route path="/" element={<Navigate to="/login" />} />
@@ -74,7 +114,7 @@ function App() {
           {/* User Dashboard (non-admin users) */}
           <Route
             path="/user"
-            element={token ? <UserDashboard /> : <Navigate to="/login" />}
+            element={token ? <UserDashboard handleLogout= {handleLogout} /> : <Navigate to="/login" />}
           >
             <Route path="quiz/create" element={<CreateQuiz />} />
             <Route path="quiz/results" element={<UserResults />} />
@@ -94,7 +134,7 @@ function App() {
 
           {/* Admin Dashboard - Only accessible if the user is an admin */}
           {userRole === "Admin" && (
-            <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="/admin" element={<AdminDashboard handleLogout={handleLogout}/>}>
               <Route path="create-role" element={<CreateRole />} />
               <Route path="assign-role" element={<AssignRole />} />
               <Route path="user-list" element={<UserList />} />

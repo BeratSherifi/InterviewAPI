@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 
-const AdminDashboard: React.FC = () => {
+
+interface AdminDashboardProps {
+  handleLogout: () => void;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({handleLogout}) => {
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
   const [showPositions, setShowPositions] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
@@ -305,12 +310,9 @@ const AdminDashboard: React.FC = () => {
           </ul>
 
           {/* Logout button */}
-          <Link
-            to="/logout"
-            className="mt-auto block text-red-500 hover:text-red-300 text-center md:text-left transition-colors duration-200"
-          >
-            Logout
-          </Link>
+          <button onClick={handleLogout} className="text-red-500 hover:text-red-300 text-center md:text-left transition-colors duration-200">
+              Logout
+            </button>
         </div>
       )}
 

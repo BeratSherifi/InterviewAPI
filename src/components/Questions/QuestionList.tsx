@@ -23,9 +23,10 @@ interface Position {
 }
 
 const QuestionList: React.FC = () => {
-  const [theoreticalQuestions, setTheoreticalQuestions] = useState<Question[]>([]);
-  const [practicalQuestions, setPracticalQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,16 +38,8 @@ const QuestionList: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        const allQuestions = response.data as Question[];
-        const theoretical = allQuestions.filter(
-          (question: Question) => question.questionType === "Theoretical"
-        );
-        const practical = allQuestions.filter(
-          (question: Question) => question.questionType === "Practical"
-        );
-        setTheoreticalQuestions(theoretical);
-        setPracticalQuestions(practical);
+        setQuestions(response.data);
+        setFilteredQuestions(response.data); // Initially show all questions
         setError(null);
       } catch (err) {
         setError("Failed to fetch questions.");
@@ -61,8 +54,8 @@ const QuestionList: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         setPositions(response.data);
+        setError(null);
       } catch (err) {
         setError("Failed to fetch positions.");
       }
@@ -72,6 +65,21 @@ const QuestionList: React.FC = () => {
     fetchPositions();
   }, []);
 
+  const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const positionId = parseInt(event.target.value);
+    setSelectedPosition(positionId);
+
+    // Filter questions by the selected position
+    if (!isNaN(positionId)) {
+      const filtered = questions.filter(
+        (question) => question.positionId === positionId
+      );
+      setFilteredQuestions(filtered);
+    } else {
+      setFilteredQuestions(questions); // Show all questions if no position is selected
+    }
+  };
+
   const handleDelete = async (questionId: number) => {
     try {
       const token = localStorage.getItem("token");
@@ -80,10 +88,8 @@ const QuestionList: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setTheoreticalQuestions((prev) =>
-        prev.filter((q) => q.questionId !== questionId)
-      );
-      setPracticalQuestions((prev) =>
+      setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
+      setFilteredQuestions((prev) =>
         prev.filter((q) => q.questionId !== questionId)
       );
     } catch (err) {
@@ -93,92 +99,87 @@ const QuestionList: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
-      <div className="bg-gray-800 p-4 rounded-lg w-full max-w-4xl">
-        <h1 className="text-2xl text-white mb-4">Question List</h1>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+      <div className="bg-gray-800 p-6 rounded-lg w-full max-w-5xl shadow-lg">
+        <h1 className="text-2xl text-white font-bold mb-6 text-center">
+          Question List
+        </h1>
+        {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
 
-        <h2 className="text-white text-xl mb-2">Theoretical Questions</h2>
-        <div className="max-h-96 overflow-y-auto">
-          <ul className="text-white mb-6 space-y-4">
-            {theoreticalQuestions.map((question: Question) => (
-              <motion.li
-                key={question.questionId}
-                className="mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div>
-                  <h3 className="font-semibold">{question.text}</h3>
-                  <p>Difficulty Level: {question.difficultyLevel}</p>
-                  <p>Type: {question.questionType}</p>
-                  <p>
-                    Position:{" "}
-                    {
-                      positions.find((pos) => pos.positionId === question.positionId)?.positionName
-                    }
-                  </p>
-                  <ul className="ml-4">
-                    {question.choices.map((choice: Choice) => (
-                      <li key={choice.choiceId}>
-                        {choice.text} - {choice.isCorrect ? "Correct" : "Incorrect"}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-2 flex space-x-2">
-                    <button
-                      onClick={() => handleDelete(question.questionId)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg w-full md:w-auto"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </motion.li>
+        {/* Dropdown for selecting position */}
+        <div className="mb-6">
+          <label
+            htmlFor="position"
+            className="block text-white font-medium mb-2"
+          >
+            Filter by Position:
+          </label>
+          <select
+            id="position"
+            className="w-full p-3 border border-gray-700 rounded-lg bg-gray-700 text-white"
+            value={selectedPosition || ""}
+            onChange={handlePositionChange}
+          >
+            <option value="">All Positions</option>
+            {positions.map((position) => (
+              <option key={position.positionId} value={position.positionId}>
+                {position.positionName}
+              </option>
             ))}
-          </ul>
+          </select>
         </div>
 
-        <h2 className="text-white text-xl mb-2">Practical Questions</h2>
-        <div className="max-h-96 overflow-y-auto">
-          <ul className="text-white space-y-4">
-            {practicalQuestions.map((question: Question) => (
-              <motion.li
+        {/* Display questions */}
+        <div className="max-h-[500px] overflow-y-auto space-y-4">
+          {filteredQuestions.length > 0 ? (
+            filteredQuestions.map((question: Question) => (
+              <motion.div
                 key={question.questionId}
-                className="mb-4"
+                className="bg-gray-700 p-4 rounded-lg shadow-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div>
-                  <h3 className="font-semibold">{question.text}</h3>
-                  <p>Difficulty Level: {question.difficultyLevel}</p>
-                  <p>Type: {question.questionType}</p>
-                  <p>
-                    Position:{" "}
-                    {
-                      positions.find((pos) => pos.positionId === question.positionId)?.positionName
-                    }
-                  </p>
-                  <ul className="ml-4">
-                    {question.choices.map((choice: Choice) => (
-                      <li key={choice.choiceId}>
-                        {choice.text} - {choice.isCorrect ? "Correct" : "Incorrect"}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-2 flex space-x-2">
-                    <button
-                      onClick={() => handleDelete(question.questionId)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg w-full md:w-auto"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </motion.li>
-            ))}
-          </ul>
+                <h3 className="text-lg font-semibold text-white">
+                  {question.text}
+                </h3>
+                <p className="text-sm text-gray-300">
+                  Difficulty Level: {question.difficultyLevel}
+                </p>
+                <p className="text-sm text-gray-300">
+                  Position:{" "}
+                  {
+                    positions.find(
+                      (pos) => pos.positionId === question.positionId
+                    )?.positionName
+                  }
+                </p>
+                <ul className="ml-4 mt-2 space-y-1">
+                  {question.choices.map((choice: Choice) => (
+                    <li key={choice.choiceId} className="text-gray-300">
+                      {choice.text} -{" "}
+                      <span
+                        className={
+                          choice.isCorrect ? "text-green-400" : "text-red-400"
+                        }
+                      >
+                        {choice.isCorrect ? "Correct" : "Incorrect"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleDelete(question.questionId)}
+                  className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full md:w-auto"
+                >
+                  Delete
+                </button>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-white text-center">
+              No questions available for the selected position.
+            </p>
+          )}
         </div>
       </div>
     </div>

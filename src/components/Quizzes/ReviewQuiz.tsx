@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 interface UserAnswer {
   userAnswerId: number;
   questionId: number;
+  choiceId: number | null;
   answerText: string | null;
   practicalScore: number | null;
 }
@@ -16,19 +17,20 @@ interface QuizDetails {
 
 const ReviewQuiz: React.FC = () => {
   const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [userMap, setUserMap] = useState<{ [key: string]: string }>({});
   const [selectedQuiz, setSelectedQuiz] = useState<QuizDetails | null>(null);
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const [answerScores, setAnswerScores] = useState<{ [key: number]: number }>({});
   const [comment, setComment] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [questionTexts, setQuestionTexts] = useState<{ [key: number]: string }>({});
-  
+  const [questionDetails, setQuestionDetails] = useState<{ [key: number]: any }>({});
+
   // Reference to the review section
   const reviewSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
+    const fetchInitialData = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -36,27 +38,42 @@ const ReviewQuiz: React.FC = () => {
           return;
         }
 
-        const response = await axios.get('https://localhost:7213/api/Quiz', {
+        // Fetch quizzes
+        const quizResponse = await axios.get('https://localhost:7213/api/Quiz', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setQuizzes(response.data);
+        setQuizzes(quizResponse.data);
+
+        // Fetch all users to create a mapping of userId to email
+        const userResponse = await axios.get('https://localhost:7213/api/Auth/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const users = userResponse.data;
+        const userMapping = users.reduce(
+          (acc: { [key: string]: string }, user: any) => {
+            acc[user.id] = user.email;
+            return acc;
+          },
+          {}
+        );
+        setUserMap(userMapping);
       } catch (error) {
-        setError('Failed to fetch quizzes.');
+        setError('Failed to fetch data.');
       }
     };
 
-    fetchQuizzes();
+    fetchInitialData();
   }, []);
 
-  const fetchQuestionText = async (questionId: number) => {
+  const fetchQuestionDetails = async (questionId: number) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`https://localhost:7213/api/Question/${questionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.text;
+      return response.data;
     } catch {
-      return 'Failed to load question text';
+      return null;
     }
   };
 
@@ -76,17 +93,18 @@ const ReviewQuiz: React.FC = () => {
       });
 
       const quizDetails: QuizDetails = response.data;
-      const practicalQuestions = quizDetails.userAnswers.slice(-5);
 
-      const newQuestionTexts: { [key: number]: string } = {};
-      for (const answer of practicalQuestions) {
-        const text = await fetchQuestionText(answer.questionId);
-        newQuestionTexts[answer.questionId] = text;
+      const newQuestionDetails: { [key: number]: any } = {};
+      for (const answer of quizDetails.userAnswers) {
+        const details = await fetchQuestionDetails(answer.questionId);
+        if (details) {
+          newQuestionDetails[answer.questionId] = details;
+        }
       }
 
-      setQuestionTexts(newQuestionTexts);
+      setQuestionDetails(newQuestionDetails);
       setSelectedQuiz(quizDetails);
-      setAnswers(practicalQuestions);
+      setAnswers(quizDetails.userAnswers);
 
       // Scroll to the review section
       reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -98,7 +116,7 @@ const ReviewQuiz: React.FC = () => {
   const handleScoreChange = (userAnswerId: number, score: number) => {
     setAnswerScores((prevScores) => ({
       ...prevScores,
-      [userAnswerId]: Math.max(0, Math.min(10, score)),
+      [userAnswerId]: Math.max(0, Math.min(10, score)), // Ensure score is between 0 and 10
     }));
   };
 
@@ -112,15 +130,19 @@ const ReviewQuiz: React.FC = () => {
         return;
       }
 
+      // Prepare the payload: Only include practical questions with scores
       const reviewPayload = {
         quizId: selectedQuiz.quizId,
-        answers: answers.map((answer) => ({
-          userAnswerId: answer.userAnswerId,
-          score: answerScores[answer.userAnswerId] || 0,
-        })),
+        answers: answers
+          .filter((answer) => questionDetails[answer.questionId]?.questionType === 'Practical')
+          .map((answer) => ({
+            userAnswerId: answer.userAnswerId,
+            score: answerScores[answer.userAnswerId] || 0,
+          })),
         comment,
       };
 
+      // POST request to the API
       const response = await axios.post('https://localhost:7213/api/Quiz/review', reviewPayload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -158,7 +180,9 @@ const ReviewQuiz: React.FC = () => {
               >
                 <div>
                   <p className="text-white">Quiz ID: {quiz.quizId}</p>
-                  <p className="text-gray-300">User ID: {quiz.userId}</p>
+                  <p className="text-gray-300">
+                    User Email: {userMap[quiz.userId] || 'Loading...'}
+                  </p>
                   <p className="text-gray-300">Total Score: {quiz.totalScore}</p>
                   <p className="text-gray-300">Passed: {quiz.passed ? 'Yes' : 'No'}</p>
                   <p className="text-gray-300">Controlled: {quiz.controlled ? 'Yes' : 'No'}</p>
@@ -185,21 +209,56 @@ const ReviewQuiz: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <h3 className="text-lg text-white font-bold">Reviewing Quiz ID: {selectedQuiz.quizId}</h3>
-            {answers.map((answer, index) => (
-              <div key={index} className="mb-4 bg-gray-700 p-4 rounded-lg">
-                <p className="text-white">
-                  Question: {questionTexts[answer.questionId] || 'Loading question...'}
-                </p>
-                <p className="text-white">Answer Text: {answer.answerText || 'No answer provided'}</p>
-                <input
-                  type="number"
-                  placeholder="Enter score"
-                  value={answerScores[answer.userAnswerId] || ''}
-                  onChange={(e) => handleScoreChange(answer.userAnswerId, Number(e.target.value))}
-                  className="w-full p-3 mt-2 border border-gray-600 rounded-lg bg-gray-800 text-white"
-                />
-              </div>
-            ))}
+            {answers.map((answer, index) => {
+              const question = questionDetails[answer.questionId];
+              if (!question) return null;
+
+              const chosenAnswer =
+                question.choices.find((choice: any) => choice.choiceId === answer.choiceId)
+                  ?.text || 'No answer provided';
+
+              return (
+                <div key={index} className="mb-4 bg-gray-700 p-4 rounded-lg">
+                  <p className="text-indigo-400 font-bold">Question: {question.text}</p>
+                  <p className="text-white">Chosen Answer: {chosenAnswer}</p>
+                  {question.questionType === 'Theoretical' && question.choices && (
+                    <>
+                      <p className="text-white mt-4">Choices:</p>
+                      <ul className="ml-4">
+                        {question.choices.map((choice: any) => (
+                          <li
+                            key={choice.choiceId}
+                            className="mt-1 flex justify-between"
+                          >
+                            <span className="text-gray-300">{choice.text}</span>
+                            <span
+                              className={`ml-2 font-semibold ${
+                                choice.isCorrect ? 'text-green-500' : 'text-red-500'
+                              }`}
+                            >
+                              {choice.isCorrect ? 'Correct' : 'Incorrect'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {question.questionType === 'Practical' && (
+                    <>
+                      <input
+                        type="number"
+                        placeholder="Enter score"
+                        value={answerScores[answer.userAnswerId] || ''}
+                        onChange={(e) =>
+                          handleScoreChange(answer.userAnswerId, Number(e.target.value))
+                        }
+                        className="w-full p-3 mt-2 border border-gray-600 rounded-lg bg-gray-800 text-white"
+                      />
+                    </>
+                  )}
+                </div>
+              );
+            })}
             <textarea
               placeholder="Add your comments here..."
               value={comment}

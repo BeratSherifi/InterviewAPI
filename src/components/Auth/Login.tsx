@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,11 +13,7 @@ const Login: React.FC = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const emails = JSON.parse(localStorage.getItem("savedEmails") || "[]");
-    setSavedEmails(emails);
-  }, []);
-
+  // Utility to decode JWT
   const parseJwt = (token: string) => {
     try {
       const base64Url = token.split(".")[1];
@@ -30,54 +26,77 @@ const Login: React.FC = () => {
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
+      console.error("Error parsing token:", error);
       return null;
     }
   };
 
-  const isTokenExpired = (token: string): boolean => {
+  // Check if token is expired
+  const isTokenExpired = useCallback((token: string | null): boolean => {
+    if (!token) return true;
     const decoded = parseJwt(token);
     if (decoded && decoded.exp) {
       const currentTime = Math.floor(Date.now() / 1000);
       return currentTime >= decoded.exp;
     }
     return true;
-  };
+  }, []);
+
+  // Load saved emails and check token on mount
+  useEffect(() => {
+    const emails = JSON.parse(localStorage.getItem("savedEmails") || "[]");
+    setSavedEmails(emails);
+
+    const token = localStorage.getItem("token");
+    if (token && isTokenExpired(token)) {
+      localStorage.removeItem("token"); // Clear expired token
+      localStorage.removeItem("userId");
+    }
+  }, [isTokenExpired]);
 
   const handleLogin = async () => {
     try {
       setIsLoggingIn(true);
-      const response = await axios.post('https://localhost:7213/api/auth/login', { email, password });
+      setError(null);
+
+      const response = await axios.post("https://localhost:7213/api/auth/login", {
+        email,
+        password,
+      });
 
       if (response.data.token) {
+        // Check token expiration
         if (isTokenExpired(response.data.token)) {
-          setError('Session expired. Please log in again.');
+          setError("Session expired. Please log in again.");
+          setIsLoggingIn(false);
           return;
         }
 
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
+        // Save token and user data to localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userId", response.data.userId);
 
-        const decodedToken = parseJwt(response.data.token);
-
+        // Save email to suggestions if not already present
         if (!savedEmails.includes(email)) {
           const updatedEmails = [...savedEmails, email];
-          localStorage.setItem('savedEmails', JSON.stringify(updatedEmails));
+          localStorage.setItem("savedEmails", JSON.stringify(updatedEmails));
           setSavedEmails(updatedEmails);
         }
 
-        setTimeout(() => {
-          if (decodedToken && decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] === 'Admin') {
-            navigate('/admin');
-          } else {
-            navigate('/user');
-          }
-        }, 500);
+        // Decode the token to get user role
+        const decodedToken = parseJwt(response.data.token);
+        if (decodedToken) {
+          const userRole = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+          navigate(userRole === "Admin" ? "/admin" : "/user");
+        } else {
+          setError("Invalid token structure.");
+        }
       } else {
-        setError('Invalid login response. No token received.');
+        setError("Invalid login response. No token received.");
       }
     } catch (error: any) {
-      setError('Login failed. Please check your credentials.');
-      console.error('Login error:', error.response ? error.response.data : error);
+      setError("Login failed. Please check your credentials.");
+      console.error("Login error:", error.response ? error.response.data : error);
     } finally {
       setIsLoggingIn(false);
     }
