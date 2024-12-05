@@ -19,7 +19,7 @@ public class TokenService : ITokenService
         _userManager = userManager;
     }
 
-    private const int ExpirationMinutes = 30;
+    private const int ExpirationMinutes = 90;
     public async Task<string> CreateToken(User user)
     {
         var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
