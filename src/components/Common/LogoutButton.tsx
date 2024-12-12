@@ -1,10 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { resetAuth } from '../../store/slices/authSlice'; // Import reset action
 
 const LogoutButton: React.FC = () => {
-  const navigate = useNavigate();  // Hook for redirection
+  const navigate = useNavigate(); // Hook for redirection
+  const dispatch = useDispatch(); // Hook to interact with Redux
 
   const handleLogout = () => {
+    // Reset Redux state
+    dispatch(resetAuth());
+
     // Remove the token from localStorage
     localStorage.removeItem('token');
 

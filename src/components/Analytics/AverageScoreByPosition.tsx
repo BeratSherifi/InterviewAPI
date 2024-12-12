@@ -1,82 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import {
+  fetchPositionsThunk,
+  fetchAverageScoreThunk,
+  clearError,
+} from '../../store/slices/analyticsSlice';
 import { motion } from 'framer-motion';
 
-interface Position {
-  positionId: number;
-  positionName: string;
-}
-
-interface AverageScore {
-  positionId: number;
-  averageScore: number;
-}
-
 const AverageScoreByPosition: React.FC = () => {
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [averageScore, setAverageScore] = useState<AverageScore | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { positions, averageScore, loading, error } = useSelector(
+    (state: RootState) => state.analytics
+  );
 
   useEffect(() => {
-    // Fetch positions
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No token found, please log in.');
-          return;
-        }
-
-        const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setPositions(response.data);
-      } catch (err) {
-        console.error('Error fetching positions:', err);
-        setError('Failed to fetch positions.');
-      }
-    };
-
-    fetchPositions();
-  }, []);
-
-  const fetchAverageScore = async (selectedPositionId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No token found, please log in.');
-        return;
-      }
-
-      const response = await axios.get(
-        `https://localhost:7213/positions/${selectedPositionId}/average-score`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setAverageScore({ positionId: selectedPositionId, averageScore: response.data });
-      setError(null); // Clear any previous errors
-    } catch (err: any) {
-      if (err.response && err.response.status === 500) {
-        setError('No quizzes available for this position.');
-        setAverageScore(null); // Clear previous average score on 404
-      } else {
-        setError('Failed to fetch average score.');
-        console.error('Error fetching average score:', err);
-      }
-    }
-  };
+    // Fetch positions when the component mounts
+    dispatch(fetchPositionsThunk());
+  }, [dispatch]);
 
   const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPositionId = parseInt(event.target.value);
     if (!isNaN(selectedPositionId)) {
-      fetchAverageScore(selectedPositionId); // Fetch average score based on selected position
+      dispatch(fetchAverageScoreThunk(selectedPositionId));
     }
   };
 
@@ -91,7 +37,14 @@ const AverageScoreByPosition: React.FC = () => {
         Average Score by Position
       </motion.h2>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && (
+        <p className="text-red-500 mb-4">
+          {error}
+          <button onClick={() => dispatch(clearError())} className="ml-2 underline">
+            Dismiss
+          </button>
+        </p>
+      )}
 
       {/* Position Dropdown */}
       <motion.div
@@ -131,6 +84,8 @@ const AverageScoreByPosition: React.FC = () => {
           <p className="text-lg">{averageScore.averageScore}</p>
         </motion.div>
       )}
+
+      {loading && <p className="text-gray-300">Loading...</p>}
     </div>
   );
 };

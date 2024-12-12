@@ -1,100 +1,50 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-
-interface Choice {
-  choiceId: number;
-  text: string;
-  isCorrect: boolean;
-}
-
-interface Question {
-  questionId: number;
-  text: string;
-  difficultyLevel: number;
-  questionType: string;
-  positionId: number;
-  choices: Choice[];
-}
-
-interface Position {
-  positionId: number;
-  positionName: string;
-}
+import { AppDispatch, RootState } from "../../store/store";
+import {
+  fetchQuestionsThunk,
+  fetchPositionsThunk,
+  setFilteredQuestions,
+  deleteQuestionThunk,
+} from "../../store/slices/questionSlice";
 
 const QuestionList: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
+  const dispatch: AppDispatch = useDispatch();
+
+  // Selectors from Redux store
+  const { questions, filteredQuestions, positions, error, loading } = useSelector(
+    (state: RootState) => state.question
+  );
+
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
+  // Fetch questions and positions on component mount
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("https://localhost:7213/api/Question", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setQuestions(response.data);
-        setFilteredQuestions(response.data); // Initially show all questions
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch questions.");
-      }
-    };
-
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("https://localhost:7213/api/Position", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setPositions(response.data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch positions.");
-      }
-    };
-
-    fetchQuestions();
-    fetchPositions();
-  }, []);
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(fetchQuestionsThunk(token)); // Fetch all questions
+      dispatch(fetchPositionsThunk(token)); // Fetch positions
+    }
+  }, [dispatch]);
 
   const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const positionId = parseInt(event.target.value);
     setSelectedPosition(positionId);
 
-    // Filter questions by the selected position
+    // Filter questions by position
     if (!isNaN(positionId)) {
       const filtered = questions.filter(
         (question) => question.positionId === positionId
       );
-      setFilteredQuestions(filtered);
+      dispatch(setFilteredQuestions(filtered)); // Update filteredQuestions in Redux store
     } else {
-      setFilteredQuestions(questions); // Show all questions if no position is selected
+      dispatch(setFilteredQuestions(questions)); // Reset to show all questions
     }
   };
 
-  const handleDelete = async (questionId: number) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`https://localhost:7213/api/Question/${questionId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setQuestions((prev) => prev.filter((q) => q.questionId !== questionId));
-      setFilteredQuestions((prev) =>
-        prev.filter((q) => q.questionId !== questionId)
-      );
-    } catch (err) {
-      console.error("Failed to delete the question.", err);
-    }
+  const handleDelete = (questionId: number) => {
+    dispatch(deleteQuestionThunk(questionId)); // Dispatch delete action
   };
 
   return (
@@ -130,8 +80,10 @@ const QuestionList: React.FC = () => {
 
         {/* Display questions */}
         <div className="max-h-[500px] overflow-y-auto space-y-4">
-          {filteredQuestions.length > 0 ? (
-            filteredQuestions.map((question: Question) => (
+          {loading ? (
+            <p className="text-white text-center">Loading...</p>
+          ) : filteredQuestions.length > 0 ? (
+            filteredQuestions.map((question) => (
               <motion.div
                 key={question.questionId}
                 className="bg-gray-700 p-4 rounded-lg shadow-md"
@@ -154,7 +106,7 @@ const QuestionList: React.FC = () => {
                   }
                 </p>
                 <ul className="ml-4 mt-2 space-y-1">
-                  {question.choices.map((choice: Choice) => (
+                  {question.choices.map((choice) => (
                     <li key={choice.choiceId} className="text-gray-300">
                       {choice.text} -{" "}
                       <span

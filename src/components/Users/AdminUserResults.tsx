@@ -1,113 +1,27 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import {
+  fetchUsersThunk,
+  fetchQuizResultsThunk,
+  clearError,
+} from '../../store/slices/userSlice';
+import { RootState, AppDispatch } from '../../store/store';
 
 const AdminUserResults: React.FC = () => {
-  const [userResults, setUserResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<string>(''); // Admin inputs the user's email
+  const [email, setEmail] = useState<string>('');
+  const dispatch: AppDispatch = useDispatch();
+  const { users, userResults, loading, error } = useSelector(
+    (state: RootState) => state.user
+  );
 
-  // Function to fetch user ID based on email
-  const fetchUserIdByEmail = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You are not authenticated. Please log in.');
-        setLoading(false);
-        return null;
-      }
-
-      const response = await axios.get('https://localhost:7213/api/Auth/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const users = response.data;
-      const user = users.find((u: any) => u.email === email);
-      if (user) {
-        return user.id;
-      } else {
-        setError('No user found with that email.');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      setError('Failed to fetch users.');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Function to fetch the quiz results by userId
-  const fetchQuizResults = async (userId: string) => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You are not authenticated. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.get(
-        `https://localhost:7213/api/Quiz/results/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      // Fetch questions for user answers
-      const resultsWithQuestions = await Promise.all(
-        response.data.map(async (result: any) => {
-          const userAnswersWithQuestions = await Promise.all(
-            result.userAnswers.map(async (answer: any) => {
-              try {
-                const questionResponse = await axios.get(
-                  `https://localhost:7213/api/Question/${answer.questionId}`,
-                  {
-                    headers: { Authorization: `Bearer ${token}` },
-                  }
-                );
-
-                const question = questionResponse.data;
-                const chosenAnswer =
-                  question.choices.find(
-                    (choice: any) => choice.choiceId === answer.choiceId
-                  )?.text || 'No answer provided';
-
-                return {
-                  ...answer,
-                  question,
-                  chosenAnswer,
-                };
-              } catch (err) {
-                console.error('Error fetching question:', err);
-                return { ...answer, question: null, chosenAnswer: 'Error loading answer' };
-              }
-            })
-          );
-          return { ...result, userAnswers: userAnswersWithQuestions };
-        })
-      );
-
-      setUserResults(resultsWithQuestions);
-      setError(null);
-    } catch (error) {
-      console.error('Error fetching quiz results:', error);
-      setError('Failed to fetch quiz results.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handler to fetch results when admin submits email
   const handleFetchResults = async () => {
-    setError(null);
-    const fetchedUserId = await fetchUserIdByEmail();
-    if (fetchedUserId) {
-      await fetchQuizResults(fetchedUserId);
+    dispatch(clearError());
+    const fetchedUser = users.find((u: any) => u.email === email);
+    if (fetchedUser) {
+      dispatch(fetchQuizResultsThunk(fetchedUser.id));
+    } else {
+      dispatch(fetchUsersThunk());
     }
   };
 

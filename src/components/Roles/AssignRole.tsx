@@ -1,49 +1,22 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store/store';
+import { assignRoleThunk, clearRoleState } from '../../store/slices/roleSlice';
 import { motion } from 'framer-motion';
 
 const AssignRole: React.FC = () => {
   const [username, setUsername] = useState('');
   const [roleName, setRoleName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { loading, success, error } = useSelector((state: RootState) => state.role);
 
-  const handleAssignRole = async () => {
-    if (!username || !roleName) {
-      setError('Both username and role name are required.');
-      return;
-    }
+  const handleAssignRole = () => {
+    if (!username || !roleName) return;
+    dispatch(assignRoleThunk({ username, roleName }));
+  };
 
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No token found, please log in.');
-        return;
-      }
-
-      await axios.post(
-        `https://localhost:7213/api/Auth/assign-role?username=${encodeURIComponent(username)}&roleName=${encodeURIComponent(roleName)}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      setSuccess(`Role "${roleName}" assigned to user "${username}" successfully!`);
-      setError(null);
-      setUsername('');
-      setRoleName('');
-    } catch (error: any) {
-      if (error.response) {
-        setError(`Failed to assign role. Server response: ${error.response.data.message || 'Unknown error'}`);
-      } else {
-        setError('Failed to assign role. Make sure you are logged in as an admin.');
-      }
-      setSuccess(null);
-    }
+  const clearMessages = () => {
+    dispatch(clearRoleState());
   };
 
   return (
@@ -60,6 +33,7 @@ const AssignRole: React.FC = () => {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onFocus={clearMessages}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <input
@@ -67,6 +41,7 @@ const AssignRole: React.FC = () => {
           placeholder="Role Name"
           value={roleName}
           onChange={(e) => setRoleName(e.target.value)}
+          onFocus={clearMessages}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <motion.button
@@ -74,20 +49,12 @@ const AssignRole: React.FC = () => {
           className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          disabled={loading}
         >
-          Assign Role
+          {loading ? 'Assigning...' : 'Assign Role'}
         </motion.button>
-
-        {error && (
-          <div className="text-red-500 text-sm mt-4 text-center">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="text-green-500 text-sm mt-4 text-center">
-            {success}
-          </div>
-        )}
+        {error && <div className="text-red-500 text-sm mt-4 text-center">{error}</div>}
+        {success && <div className="text-green-500 text-sm mt-4 text-center">{success}</div>}
       </motion.div>
     </div>
   );

@@ -1,91 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import {
+  fetchPositionsThunk,
+  fetchLowestScoresThunk,
+  clearLowestScores,
+} from '../../store/slices/analyticsSlice';
 import { motion } from 'framer-motion';
 
-interface Position {
-  positionId: number;
-  positionName: string;
-}
-
-interface Score {
-  quizId: number;
-  userId: string;
-  totalScore: number;
-  passed: boolean;
-  controlled: boolean;
-}
-
 const LowestScoresByPosition: React.FC = () => {
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [scores, setScores] = useState<Score[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { positions, lowestScores,error } = useSelector(
+    (state: RootState) => state.analytics
+  );
 
   useEffect(() => {
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No token found, please log in.');
-          return;
-        }
-
-        const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setPositions(response.data);
-      } catch (err) {
-        console.error('Error fetching positions:', err);
-        setError('Failed to fetch positions.');
-      }
-    };
-
-    fetchPositions();
-  }, []);
-
-  const fetchLowestScores = async (selectedPositionId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No token found, please log in.');
-        return;
-      }
-
-      const response = await axios.get(
-        `https://localhost:7213/positions/${selectedPositionId}/lowest-scores`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.length === 0) {
-        setError('No quizzes found for this position.');
-        setScores([]); // Clear any previous scores
-      } else {
-        setScores(response.data); // Set the scores if found
-        setError(null); // Clear any previous errors
-      }
-    } catch (err: any) {
-      if (err.response && err.response.status === 404) {
-        setError('No quizzes found for this position.');
-        setScores([]); // Clear previous scores on 404
-      } else {
-        setError('Failed to fetch lowest scores.');
-        if (!err.response || err.response.status !== 404) {
-          console.error('Error fetching lowest scores:', err);
-        }
-      }
-    }
-  };
+    dispatch(fetchPositionsThunk()); // Fetch positions on mount
+  }, [dispatch]);
 
   const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPositionId = parseInt(event.target.value);
     if (!isNaN(selectedPositionId)) {
-      fetchLowestScores(selectedPositionId);
+      dispatch(fetchLowestScoresThunk(selectedPositionId)); // Fetch scores for selected position
+    } else {
+      dispatch(clearLowestScores()); // Clear scores if no position selected
     }
   };
 
@@ -133,8 +71,8 @@ const LowestScoresByPosition: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {scores.length > 0 ? (
-            scores.map((score) => (
+          {lowestScores.length > 0 ? (
+            lowestScores.map((score) => (
               <motion.tr
                 key={score.quizId}
                 initial={{ opacity: 0 }}

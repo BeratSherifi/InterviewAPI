@@ -1,24 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { motion } from 'framer-motion';
-
-// Helper function to decode the JWT
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-};
+import { fetchQuizResultsByUserId } from '../../services/userService'; // Import the function from userService
 
 const UserResults: React.FC = () => {
   const [userResults, setUserResults] = useState<any[]>([]);
@@ -26,6 +8,24 @@ const UserResults: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [noResultsMessage, setNoResultsMessage] = useState<string | null>(null);
+
+  // Helper function to decode JWT and extract userId
+  const parseJwt = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
 
   // Extract the userId from the token
   useEffect(() => {
@@ -41,8 +41,10 @@ const UserResults: React.FC = () => {
     }
   }, []);
 
-  // Function to fetch the quiz results by userId
+  // Fetch quiz results using the helper function
   const fetchQuizResults = async () => {
+    if (!userId) return;
+
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -52,17 +54,13 @@ const UserResults: React.FC = () => {
         return;
       }
 
-      // Fetch quiz results by userId
-      const response = await axios.get(`https://localhost:7213/api/Quiz/results/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the header
-        },
-      });
+      // Use the fetchQuizResultsByUserId function to fetch quiz results
+      const results = await fetchQuizResultsByUserId(userId, token);
 
-      if (response.data.length === 0) {
+      if (results.length === 0) {
         setNoResultsMessage("You haven't participated in any quizzes yet. Start your journey today!");
       } else {
-        setUserResults(response.data);
+        setUserResults(results);
       }
 
       setError(null);
@@ -74,7 +72,7 @@ const UserResults: React.FC = () => {
     }
   };
 
-  // Handler to fetch results when user submits email
+  // Handler to fetch results when user clicks the button
   const handleFetchResults = async () => {
     setError(null); // Clear previous errors
     setNoResultsMessage(null); // Clear previous no results message

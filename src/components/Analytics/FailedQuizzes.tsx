@@ -1,26 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { fetchFailedQuizzesThunk, clearError } from '../../store/slices/analyticsSlice';
 import { motion } from 'framer-motion';
 
 const FailedQuizzes: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { failedQuizzes, error, loading } = useSelector((state: RootState) => state.analytics);
 
   useEffect(() => {
-    const fetchFailedQuizzes = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7213/users/failed-quizzes', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setQuizzes(response.data);
-      } catch (error) {
-        setError('Failed to fetch failed quizzes.');
-      }
-    };
-
-    fetchFailedQuizzes();
-  }, []);
+    dispatch(fetchFailedQuizzesThunk()); // Fetch failed quizzes on mount
+  }, [dispatch]);
 
   return (
     <div className="p-8 bg-gray-800 text-white">
@@ -32,8 +22,18 @@ const FailedQuizzes: React.FC = () => {
       >
         Failed Quizzes
       </motion.h2>
-      {error ? (
-        <p className="text-red-500 mb-4">{error}</p>
+
+      {error && (
+        <p className="text-red-500 mb-4">
+          {error}
+          <button onClick={() => dispatch(clearError())} className="ml-2 underline">
+            Dismiss
+          </button>
+        </p>
+      )}
+
+      {loading ? (
+        <p className="text-gray-300">Loading...</p>
       ) : (
         <motion.table
           className="min-w-full bg-gray-700"
@@ -49,8 +49,8 @@ const FailedQuizzes: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {quizzes.length > 0 ? (
-              quizzes.map((quiz) => (
+            {failedQuizzes.length > 0 ? (
+              failedQuizzes.map((quiz) => (
                 <motion.tr
                   key={quiz.quizId}
                   initial={{ opacity: 0, y: 10 }}

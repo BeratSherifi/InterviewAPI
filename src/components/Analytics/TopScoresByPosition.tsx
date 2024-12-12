@@ -1,90 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-interface Position {
-  positionId: number;
-  positionName: string;
-}
-
-interface Score {
-  quizId: number;
-  userId: string;
-  totalScore: number;
-  passed: boolean;
-  controlled: boolean;
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPositionsThunk, fetchTopScoresThunk, clearError } from '../../store/slices/analyticsSlice';
+import { RootState, AppDispatch } from '../../store/store';
 
 const TopScoresByPosition: React.FC = () => {
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [scores, setScores] = useState<Score[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { positions, topScores, error} = useSelector((state: RootState) => state.analytics);
 
   useEffect(() => {
-    // Fetch positions
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No token found, please log in.');
-          return;
-        }
-
-        const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setPositions(response.data);
-      } catch (err) {
-        console.error('Error fetching positions:', err); // Log error if fetching fails
-        setError('Failed to fetch positions.');
-      }
-    };
-
-    fetchPositions();
-  }, []);
-
-  const fetchTopScores = async (selectedPositionId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('No token found, please log in.');
-        return;
-      }
-
-      const response = await axios.get(
-        `https://localhost:7213/positions/${selectedPositionId}/top-scores`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.length === 0) {
-        setError('No quizzes found for this position.');
-        setScores([]); // Clear any previous scores
-      } else {
-        setScores(response.data); // Set the scores if found
-        setError(null); // Clear any previous errors
-      }
-    } catch (err: any) {
-      if (err.response && err.response.status === 404) {
-        setError('No quizzes found for this position.');
-        setScores([]); // Clear previous scores on 404
-      } else {
-        setError('Failed to fetch top scores.'); // General error handling
-        console.error('Error fetching top scores:', err);
-      }
-    }
-  };
+    dispatch(fetchPositionsThunk());
+  }, [dispatch]);
 
   const handlePositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedPositionId = parseInt(event.target.value);
     if (!isNaN(selectedPositionId)) {
-      fetchTopScores(selectedPositionId); // Fetch scores based on selected position
+      dispatch(fetchTopScoresThunk(selectedPositionId));
     }
   };
 
@@ -99,9 +30,15 @@ const TopScoresByPosition: React.FC = () => {
         Top Scores by Position
       </motion.h2>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && (
+        <p className="text-red-500 mb-4">
+          {error}{' '}
+          <button onClick={() => dispatch(clearError())} className="underline">
+            Dismiss
+          </button>
+        </p>
+      )}
 
-      {/* Position Dropdown */}
       <div className="mb-4">
         <label htmlFor="position" className="block mb-2">
           Select Position:
@@ -120,7 +57,6 @@ const TopScoresByPosition: React.FC = () => {
         </select>
       </div>
 
-      {/* Scores Table */}
       <motion.table
         className="min-w-full bg-gray-700"
         initial={{ opacity: 0 }}
@@ -137,8 +73,8 @@ const TopScoresByPosition: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {scores.length > 0 ? (
-            scores.map((score) => (
+          {topScores.length > 0 ? (
+            topScores.map((score) => (
               <tr key={score.quizId}>
                 <td className="border px-4 py-2">{score.quizId}</td>
                 <td className="border px-4 py-2">{score.userId}</td>

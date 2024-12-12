@@ -1,26 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
+import { RootState, AppDispatch } from '../../store/store';
+import { fetchHighestQuizScoreThunk } from '../../store/slices/analyticsSlice';
 
 const HighestQuizScore: React.FC = () => {
-  const [score, setScore] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { highestQuizScore, loading, error } = useSelector(
+    (state: RootState) => state.analytics
+  );
 
   useEffect(() => {
-    const fetchHighestScore = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7213/quizzes/highest-score', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setScore(response.data);
-      } catch (error) {
-        setError('Failed to fetch highest quiz score.');
-      }
-    };
-
-    fetchHighestScore();
-  }, []);
+    dispatch(fetchHighestQuizScoreThunk());
+  }, [dispatch]);
 
   return (
     <div className="p-8 bg-gray-800 text-white">
@@ -32,21 +24,30 @@ const HighestQuizScore: React.FC = () => {
       >
         Highest Quiz Score
       </motion.h2>
-      {error ? (
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
         <p className="text-red-500">{error}</p>
+      ) : highestQuizScore ? (
+        <motion.div
+          className="bg-gray-700 p-4 rounded-lg shadow-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <p className="mb-2">
+            <strong>Quiz ID:</strong> {highestQuizScore.quizId}
+          </p>
+          <p className="mb-2">
+            <strong>Total Score:</strong> {highestQuizScore.totalScore}
+          </p>
+          <p className="mb-2">
+            <strong>User ID:</strong> {highestQuizScore.userId}
+          </p>
+        </motion.div>
       ) : (
-        score && (
-          <motion.div
-            className="bg-gray-700 p-4 rounded-lg shadow-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <p className="mb-2"><strong>Quiz ID:</strong> {score.quizId}</p>
-            <p className="mb-2"><strong>Total Score:</strong> {score.totalScore}</p>
-            <p className="mb-2"><strong>User ID:</strong> {score.userId}</p>
-          </motion.div>
-        )
+        <p>No data available.</p>
       )}
     </div>
   );

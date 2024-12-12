@@ -1,89 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store/store";
+import { fetchPositionsThunk, createQuestionThunk } from "../../store/slices/questionSlice";
+import { motion } from "framer-motion";
 
 const CreateQuestion: React.FC = () => {
-  const [text, setText] = useState('');
+  const dispatch: AppDispatch = useDispatch();
+  const { positions, error, successMessage } = useSelector((state: RootState) => state.question);
+
+  const [text, setText] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState(1);
-  const [questionType, setQuestionType] = useState('Theoretical');
+  const [questionType, setQuestionType] = useState("Theoretical");
   const [positionId, setPositionId] = useState<number | null>(null);
-  const [positions, setPositions] = useState([]);
-  const [choices, setChoices] = useState([{ text: '', isCorrect: false }]);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [choices, setChoices] = useState([{ text: "", isCorrect: false }]);
 
   useEffect(() => {
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No token found, please log in.');
-          return;
-        }
-
-        const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setPositions(response.data);
-      } catch {
-        setError('Failed to fetch positions.');
-      }
-    };
-    fetchPositions();
-  }, []);
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(fetchPositionsThunk(token));
+    } else {
+      console.error("No token found");
+    }
+  }, [dispatch]);
 
   const handleAddChoice = () => {
-    setChoices([...choices, { text: '', isCorrect: false }]);
+    setChoices([...choices, { text: "", isCorrect: false }]);
   };
 
   const handleChoiceChange = (index: number, field: string, value: string | boolean) => {
     const updatedChoices = [...choices];
-    if (field === 'text') {
+    if (field === "text") {
       updatedChoices[index].text = value as string;
-    } else if (field === 'isCorrect') {
+    } else if (field === "isCorrect") {
       updatedChoices[index].isCorrect = value as boolean;
     }
     setChoices(updatedChoices);
   };
 
   const handleSubmit = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token || !positionId) {
-        setError('No token found or no position selected, please log in and select a position.');
-        return;
-      }
-
-      await axios.post(
-        'https://localhost:7213/api/Question',
-        {
-          text,
-          difficultyLevel,
-          questionType,
-          positionId,
-          choices: questionType === 'Theoretical' ? choices : [],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setSuccess('Question created successfully!');
-      setError(null);
-      setText('');
-      setDifficultyLevel(1);
-      setQuestionType('Theoretical');
-      setPositionId(null);
-      setChoices([{ text: '', isCorrect: false }]);
-    } catch {
-      setError('Failed to create question.');
-      setSuccess(null);
+    const token = localStorage.getItem("token");
+    if (!token || !positionId) {
+      console.error("No token found or no position selected.");
+      return;
     }
+  
+    dispatch(
+      createQuestionThunk({
+        text,
+        difficultyLevel,
+        questionType,
+        positionId,
+        choices: questionType === "Theoretical"
+          ? choices.map((choice, index) => ({
+              ...choice,
+              choiceId: index + 1, // Assign temporary IDs for new choices
+            }))
+          : [],
+      })
+    );
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
@@ -94,9 +70,9 @@ const CreateQuestion: React.FC = () => {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-2xl text-white font-bold mb-6 text-center">Create Question</h1>
-        
+
         {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
-        {success && <div className="text-green-500 mb-4 text-center">{success}</div>}
+        {successMessage && <div className="text-green-500 mb-4 text-center">{successMessage}</div>}
 
         <input
           type="text"
@@ -126,19 +102,19 @@ const CreateQuestion: React.FC = () => {
         />
 
         <select
-          value={positionId || ''}
+          value={positionId || ""}
           onChange={(e) => setPositionId(Number(e.target.value))}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         >
           <option value="">Select Position</option>
-          {positions.map((position: any) => (
+          {positions.map((position) => (
             <option key={position.positionId} value={position.positionId}>
               {position.positionName}
             </option>
           ))}
         </select>
 
-        {questionType === 'Theoretical' && (
+        {questionType === "Theoretical" && (
           <>
             <h3 className="text-white mb-2">Choices</h3>
             {choices.map((choice, index) => (
@@ -147,14 +123,14 @@ const CreateQuestion: React.FC = () => {
                   type="text"
                   placeholder="Choice Text"
                   value={choice.text}
-                  onChange={(e) => handleChoiceChange(index, 'text', e.target.value)}
+                  onChange={(e) => handleChoiceChange(index, "text", e.target.value)}
                   className="w-full p-3 mb-2 border border-gray-700 rounded-lg bg-gray-700 text-white"
                 />
                 <label className="text-white flex items-center space-x-2">
                   <input
                     type="checkbox"
                     checked={choice.isCorrect}
-                    onChange={(e) => handleChoiceChange(index, 'isCorrect', e.target.checked)}
+                    onChange={(e) => handleChoiceChange(index, "isCorrect", e.target.checked)}
                     className="mr-2"
                   />
                   <span>Is Correct</span>

@@ -1,78 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-interface Quiz {
-  quizId: number;
-  totalScore: number;
-  passed: boolean;
-  controlled: boolean;
-  message: string;
-  positionId: number;
-}
-
-interface Position {
-  positionId: number;
-  positionName: string;
-}
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchQuizzesThunk,
+  fetchPositionsThunk,
+  deleteQuizThunk,
+  clearSuccess,
+  clearError,
+} from '../../store/slices/quizSlice';
+import { RootState, AppDispatch } from '../../store/store';
 
 const QuizList: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+
+  // Access state from Redux store
+  const { quizzes, positions, loading, error, success } = useSelector((state: RootState) => state.quiz);
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7213/api/Quiz', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setQuizzes(response.data);
-      } catch (error) {
-        console.error('Error fetching quizzes:', error);
-        setError('Failed to fetch quizzes.');
-      }
-    };
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(fetchQuizzesThunk(token)); // Fetch quizzes
+      dispatch(fetchPositionsThunk(token)); // Fetch positions
+    }
+  }, [dispatch]);
 
-    const fetchPositions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7213/api/Position', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setPositions(response.data);
-      } catch (error) {
-        console.error('Error fetching positions:', error);
-        setError('Failed to fetch positions.');
-      }
-    };
-
-    fetchQuizzes();
-    fetchPositions();
-  }, []);
-
-  const handleDelete = async (quizId: number) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`https://localhost:7213/api/Quiz/${quizId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setQuizzes((prevQuizzes) => prevQuizzes.filter((quiz) => quiz.quizId !== quizId));
-      setSuccess('Quiz deleted successfully!');
-      setError(null);
-    } catch (error) {
-      console.error('Error deleting quiz:', error);
-      setError('Failed to delete the quiz.');
-      setSuccess(null);
+  const handleDelete = (quizId: number) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(deleteQuizThunk({ quizId, token })); // Dispatch the delete action
     }
   };
 
@@ -91,8 +46,23 @@ const QuizList: React.FC = () => {
       >
         <h2 className="text-2xl text-white font-bold mb-4 text-center">Quiz List</h2>
 
-        {error && <div className="text-red-500 text-sm mb-4 text-center">{error}</div>}
-        {success && <div className="text-green-500 text-sm mb-4 text-center">{success}</div>}
+        {loading && <div className="text-white text-center">Loading...</div>}
+        {error && (
+          <div className="text-red-500 text-sm mb-4 text-center">
+            {error}
+            <button onClick={() => dispatch(clearError())} className="ml-2 underline">
+              Dismiss
+            </button>
+          </div>
+        )}
+        {success && (
+          <div className="text-green-500 text-sm mb-4 text-center">
+            {success}
+            <button onClick={() => dispatch(clearSuccess())} className="ml-2 underline">
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <div className="max-h-96 overflow-y-auto hide-scrollbar">
           {quizzes.length > 0 ? (

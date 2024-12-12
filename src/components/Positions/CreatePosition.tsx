@@ -1,37 +1,33 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { motion } from 'framer-motion';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setPositionName,
+  setError,
+  setSuccess,
+} from "../../store/slices/positionSlice";
+import { createPositionApi } from "../../services/positionService";
+import { motion } from "framer-motion";
 
 const CreatePosition: React.FC = () => {
-  const [positionName, setPositionName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const { positionName, error, success } = useSelector(
+    (state: any) => state.position
+  );
 
   const handleCreatePosition = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You are not authenticated. Please log in.');
-        return;
-      }
-
-      await axios.post(
-        'https://localhost:7213/api/Position',
-        { positionName },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setSuccess(`Position "${positionName}" created successfully!`);
-      setError(null);
-      setPositionName('');
-    } catch (error: any) {
-      setError('Failed to create position.');
-      setSuccess(null);
+      await createPositionApi(positionName);
+      dispatch(setSuccess(`Position "${positionName}" created successfully!`));
+      dispatch(setError(null));
+      dispatch(setPositionName("")); // Clear the input field
+    } catch (err: any) {
+      dispatch(setError(err.message || "Failed to create position."));
+      dispatch(setSuccess(null));
     }
+  };
+
+  const handlePositionNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setPositionName(e.target.value));
   };
 
   return (
@@ -42,12 +38,14 @@ const CreatePosition: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl text-white font-bold mb-6 text-center">Create Position</h2>
+        <h2 className="text-2xl text-white font-bold mb-6 text-center">
+          Create Position
+        </h2>
         <input
           type="text"
           placeholder="Position Name"
           value={positionName}
-          onChange={(e) => setPositionName(e.target.value)}
+          onChange={handlePositionNameChange}
           className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <motion.button
@@ -60,9 +58,7 @@ const CreatePosition: React.FC = () => {
         </motion.button>
 
         {error && (
-          <div className="text-red-500 text-sm mt-4 text-center">
-            {error}
-          </div>
+          <div className="text-red-500 text-sm mt-4 text-center">{error}</div>
         )}
         {success && (
           <div className="text-green-500 text-sm mt-4 text-center">

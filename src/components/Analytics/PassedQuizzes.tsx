@@ -1,26 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPassedQuizzesThunk, clearError } from '../../store/slices/analyticsSlice';
+import { RootState, AppDispatch } from '../../store/store'; // Update paths if necessary
 import { motion } from 'framer-motion';
 
 const PassedQuizzes: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch: AppDispatch = useDispatch();
+  const { passedQuizzes, error, loading } = useSelector((state: RootState) => state.analytics);
 
   useEffect(() => {
-    const fetchPassedQuizzes = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7213/users/passed-quizzes', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setQuizzes(response.data);
-      } catch (error) {
-        setError('Failed to fetch passed quizzes.');
-      }
-    };
-
-    fetchPassedQuizzes();
-  }, []);
+    dispatch(fetchPassedQuizzesThunk());
+  }, [dispatch]);
 
   return (
     <div className="p-8 bg-gray-800 text-white">
@@ -32,10 +22,28 @@ const PassedQuizzes: React.FC = () => {
       >
         Passed Quizzes
       </motion.h2>
-      {error ? (
-        <p className="text-red-500 mb-4">{error}</p>
+
+      {error && (
+        <div className="text-red-500 mb-4">
+          {error}
+          <button
+            onClick={() => dispatch(clearError())}
+            className="ml-4 underline text-blue-400 hover:text-blue-600"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-gray-300">Loading...</p>
       ) : (
-        <table className="min-w-full bg-gray-700">
+        <motion.table
+          className="min-w-full bg-gray-700"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           <thead>
             <tr>
               <th className="border px-4 py-2">Quiz ID</th>
@@ -44,8 +52,8 @@ const PassedQuizzes: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {quizzes.length > 0 ? (
-              quizzes.map((quiz) => (
+            {passedQuizzes.length > 0 ? (
+              passedQuizzes.map((quiz) => (
                 <motion.tr
                   key={quiz.quizId}
                   initial={{ opacity: 0 }}
@@ -65,7 +73,7 @@ const PassedQuizzes: React.FC = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </motion.table>
       )}
     </div>
   );

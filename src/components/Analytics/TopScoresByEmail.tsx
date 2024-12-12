@@ -1,81 +1,27 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchUserIdByEmailThunk,
+  fetchTopScoresByUserIdThunk,
+  clearError,
+} from '../../store/slices/analyticsSlice';
+import { RootState, AppDispatch } from '../../store/store';
 import { motion } from 'framer-motion';
 
 const TopScoresByEmail: React.FC = () => {
   const [email, setEmail] = useState<string>('');
-  const [userResults, setUserResults] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Function to fetch user ID based on email
-  const fetchUserIdByEmail = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You are not authenticated. Please log in.');
-        setLoading(false);
-        return null;
-      }
-
-      const response = await axios.get('https://localhost:7213/api/Auth/users', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const users = response.data;
-      const user = users.find((u: any) => u.email === email);
-
-      if (user) {
-        return user.id; // Return the user ID based on the email
-      } else {
-        setError('No user found with that email.');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
-      setError('Failed to fetch users.');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Function to fetch top scores by userId
-  const fetchTopScoresByUserId = async (userId: string) => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('You are not authenticated. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.get(`https://localhost:7213/users/${userId}/topscores-by-user-id`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setUserResults(response.data);
-      setError(null);
-    } catch (error) {
-      console.error('Error fetching top scores:', error);
-      setError('Failed to fetch top scores.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const dispatch: AppDispatch = useDispatch();
+  const { userResults, error, loading } = useSelector((state: RootState) => state.analytics);
 
   // Handler to fetch results when admin submits email
   const handleFetchResults = async () => {
-    setError(null);
-    const fetchedUserId = await fetchUserIdByEmail();
-    if (fetchedUserId) {
-      await fetchTopScoresByUserId(fetchedUserId);
+    if (!email) {
+      dispatch(clearError());
+      return;
+    }
+    const userId = await dispatch(fetchUserIdByEmailThunk(email)).unwrap();
+    if (userId) {
+      dispatch(fetchTopScoresByUserIdThunk(userId));
     }
   };
 
@@ -90,7 +36,17 @@ const TopScoresByEmail: React.FC = () => {
         Top Scores by User Email
       </motion.h2>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && (
+        <div className="text-red-500 mb-4">
+          {error}
+          <button
+            onClick={() => dispatch(clearError())}
+            className="ml-4 underline text-blue-400 hover:text-blue-600"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Email Input */}
       <div className="mb-4">

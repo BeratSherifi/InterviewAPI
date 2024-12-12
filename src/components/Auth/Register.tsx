@@ -1,89 +1,72 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setEmail, setPassword, setConfirmPassword, setError, setSuccess, setIsRegistering } from "../../store/slices/authSlice";
+import { registerApi } from "../../services/authService";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { email, password, confirmPassword, error, success } = useSelector((state: any) => state.auth);
 
-  const handleRegister = async () => {
+  const handleRegisterClick = async () => {
     if (password !== confirmPassword) {
-      setError("Passwords don't match");
+      dispatch(setError("Passwords don't match"));
       return;
     }
 
     try {
-      await axios.post("https://localhost:7213/api/auth/register", {
-        email,
-        password,
-      });
+      dispatch(setIsRegistering(true));
+      dispatch(setError(null));
 
-      setSuccess("Registration successful!");
-      setError(null);
+      await registerApi(email, password);
 
+      dispatch(setSuccess("Registration successful!"));
       setTimeout(() => {
         navigate("/login");
       }, 1500);
-    } catch (error: any) {
-      setError("Registration failed. Please try again.");
-      console.error("Registration error:", error);
+    } catch (error) {
+      dispatch(setError("Registration failed. Please try again."));
+      console.error(error);
+    } finally {
+      dispatch(setIsRegistering(false));
     }
   };
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900">
-      <motion.div
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h2 className="text-2xl text-white font-bold mb-6 text-center">
-          Register
-        </h2>
+      <motion.div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl text-white font-bold mb-6 text-center">Register</h2>
         <input
           type="email"
-          placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => dispatch(setEmail(e.target.value))}
+          placeholder="Email"
+          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <input
           type="password"
-          placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => dispatch(setPassword(e.target.value))}
+          placeholder="Password"
+          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <input
           type="password"
-          placeholder="Confirm Password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onChange={(e) => dispatch(setConfirmPassword(e.target.value))}
+          placeholder="Confirm Password"
+          className="w-full p-3 mb-4 border border-gray-700 rounded-lg bg-gray-700 text-white"
         />
         <motion.button
-          onClick={handleRegister}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition-colors"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          onClick={handleRegisterClick}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold"
         >
           Register
         </motion.button>
-
-        {error && (
-          <div className="text-red-500 text-sm mt-4 text-center">{error}</div>
-        )}
-        {success && (
-          <div className="text-green-500 text-sm mt-4 text-center">
-            {success}
-          </div>
-        )}
+        {error && <div className="text-red-500 text-sm mt-4">{error}</div>}
+        {success && <div className="text-green-500 text-sm mt-4">{success}</div>}
       </motion.div>
     </div>
   );
